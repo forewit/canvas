@@ -1,8 +1,10 @@
 import { type User } from "firebase/auth";
-import { writable } from "svelte/store";
+import { readable } from "svelte/store";
+import { auth } from "$lib/firebase/firebase.client";
 
-export const firebaseStore = writable({
-    isLoading: true,
-    savingStatus: undefined as "saving" | "saved" | "error" | undefined,
-    currentUser: <User | null>null
+export const firebaseUser = readable(null as User | null, (set) => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+        set(user)
+    })
+    return unsubscribe;
 })

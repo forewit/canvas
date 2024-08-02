@@ -1,5 +1,6 @@
 export const updateSafeAreasOnOrientationChange = function () {
     if (!screen) throw new Error("Cannot listen to orientation change: screen is not defined");
+    
     screen.orientation.addEventListener("change", updateSafeAreas);
 }
 

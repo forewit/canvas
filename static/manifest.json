@@ -1,0 +1,15 @@
+{
+    "name": "Canvas",
+    "short_name": "Canvas",
+    "start_url": "/canvas/",
+    "scope": "/canvas/",
+    "display": "standalone",
+    "icons": [
+        {
+            "src": "images/favicon_512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
+}

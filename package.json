@@ -26,6 +26,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"firebase": "^10.12.5"
+		"firebase": "^10.12.5",
+		"quill": "^2.0.2"
 	}
 }

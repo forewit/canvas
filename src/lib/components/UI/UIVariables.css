@@ -1,0 +1,19 @@
+:root {
+  /* default theme variables */
+  --bg: #f0f0f0; /* background */
+  --bg-alt: #e6e6e6; /* input background */
+  --main: #c2c3cc; /* selected background*/
+  --card: #ffffff; /* caret */
+  --error: #ff5c5c; /* error background */
+  --text: #1a1a1a; /* text, :hover background */
+  --sub: #bbbcc7; /* headings, :active background */
+
+  /* safe areas */
+  --safe-area-left: 0px; /* overwritten by env("safe-area-inset-left") */
+  --safe-area-right: 0px; /* overwritten by env("safe-area-inset-right") */
+  --safe-area-top: 0px; /* overwritten by env("safe-area-inset-top") */
+  --safe-area-inline: max(var(--safe-area-left), var(--safe-area-right));
+
+  /* other */
+  --transition-speed: 200ms;
+}

@@ -1,8 +1,8 @@
 <script lang="ts">
-    import Toolbar from "../UI/Elements/UIToolbar.svelte";
+    import UIToolbar from "../UI/Elements/UIToolbar.svelte";
 </script>
 
-<Toolbar>
+<UIToolbar>
     <div class="text-format-toolbar">
         <div class="heading-options">
           <button class="huge"></button>
@@ -21,7 +21,7 @@
           <button class="indent-left"></button>
         </div>
       </div>
-</Toolbar>
+</UIToolbar>
 
 <style>
   .text-format-toolbar {

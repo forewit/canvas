@@ -14,11 +14,6 @@
   font-style: normal;
 }
 
-::selection {
-  background-color: var(--sub);
-  color: var(--bg);
-}
-
 * {
   user-select: none;
   -webkit-user-select: none;
@@ -55,4 +50,15 @@ label {
   font-size: var(--font-size);
   line-height: var(--line-height);
   color: var(--text);
+}
+
+::selection {
+  background-color: var(--sub);
+  color: var(--bg);
+}
+
+.ui-card {
+  background-color: var(--card);
+  padding: var(--m);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
 }

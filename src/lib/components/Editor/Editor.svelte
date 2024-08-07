@@ -4,21 +4,22 @@
   import type Quill from "quill/core";
   import type { Delta } from "quill/core";
   import {  onMount } from "svelte";
-  import { userSettingsStore } from "$lib/stores/userSettingsStore";
+  import { userSettingsStore } from "$lib/state/userSettings.svelte";
   import {
     saveContent,
     loadContent,
     type EditorData,
-  } from "./contentManagement";
-  import { detectAndformatLinks } from "./linkFormatting";
-  import { bindKeyboardShortcuts } from "./keyboardShortcuts";
+  } from "./utils/contentManagement";
+  import { detectAndformatLinks } from "./utils/linkFormatting";
+  import { bindKeyboardShortcuts } from "./utils/keyboardShortcuts";
+  import EditorToolbar from "./EditorToolbar.svelte";
 
 
   export let editorData: EditorData;
+  export let toolbarElm: EditorToolbar;
 
   let quill: Quill;
   let quillElm: HTMLElement;
-
 
   function updateSettings() {
     if (!quill) return;
@@ -42,10 +43,14 @@
   }
 
   async function setupEditor() {
+    if (!toolbarElm) throw new Error("Toolbar element not found");
     const { default: Quill } = await import("quill");
 
     quill = new Quill(quillElm, {
-      formats: ["bold", "italic", "underline", "strike", "code", "link"],
+      modules: {
+          toolbar: toolbarElm.toolbarElm
+      },
+      formats: ["size", "align", "indent", "list",  "bold", "italic", "underline", "strike", "code", "link"],
       placeholder: "Enter text here",
     });
 

@@ -8,6 +8,13 @@
   --text: #1a1a1a; /* text, :hover background */
   --sub: #bbbcc7; /* headings, :active background */
 
+  /* sizing based on Fibonacci & the Golden Rectangle */
+  --xs: 3px;
+  --s: 5px;
+  --m: 8px;
+  --l: 13px;
+  --xl: 21px;
+
   /* safe areas */
   --safe-area-left: 0px; /* overwritten by env("safe-area-inset-left") */
   --safe-area-right: 0px; /* overwritten by env("safe-area-inset-right") */

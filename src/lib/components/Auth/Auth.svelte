@@ -1,16 +1,16 @@
 <script lang="ts">
-  import { authHandlers } from "./authHandlers";
+  import { login } from "./authUtils";
 
-  export let onSuccessfulLogin = () => {};
+  let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
 
-  let email = "";
-  let password = "";
-  let failedLogin = false;
+  let email = $state("");
+  let password = $state("");
+  let failedLogin = $state(false);
 
   async function handleSubmit() {
     try {
       failedLogin = false;
-      await authHandlers.login(email, password);
+      await login(email, password);
       onSuccessfulLogin();
     } catch (err) {
       console.log("Login failed!");
@@ -20,7 +20,7 @@
 </script>
 
 <div class="form-container">
-  <form class="form" on:submit={handleSubmit}>
+  <form class="form" onsubmit={handleSubmit}>
     <input
       class="email"
       bind:value={email}

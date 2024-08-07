@@ -2,8 +2,8 @@
   import { onMount } from "svelte";
   import { base } from "$app/paths";
   import { goto } from "$app/navigation";
-  import { appStore } from "$lib/stores/appStore";
-  import { firebaseUser } from "$lib/stores/firebaseStore";
+  import { appStore } from "$lib/state/appStore";
+  import { firebaseUser } from "$lib/state/firebaseStore";
 
 
 

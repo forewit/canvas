@@ -8,3 +8,4 @@ export const firebaseUser = readable(null as User | null, (set) => {
     })
     return unsubscribe;
 })
+

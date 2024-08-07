@@ -1,47 +1,35 @@
 <script lang="ts">
-  import "./UIGlobal.css"
   import "./UIVariables.css";
-  import { themes } from "./Utils/themes";
-  import { updateSafeAreasOnOrientationChange } from "./Utils/updateSafeAreas";
-  import { userSettingsStore } from "$lib/stores/userSettingsStore";
-  import { onDestroy, onMount } from "svelte";
+  import "./UIGlobal.css";
+  import { themes } from "./utils/themes";
+  import { updateSafeAreasOnOrientationChange } from "./utils/updateSafeAreas";
+  import { themeName } from "$lib/state/userSettings.svelte";
+  import {onMount, untrack, type Snippet } from 'svelte';
 
-  let css = "";
-  let bgColor = "";
+  let { children }: { children: Snippet } = $props();
 
-  function updateTheme(themeName: string) {
-    const theme = themes.find((t) => t.name === themeName);
-    if (!theme) return;
+  let theme = $derived(themes.find((t) => t.name === themeName));
 
-    bgColor = theme.bg;
-    css = `<style>
-      :root {
-      --bg: ${theme.bg};
-      --bg-alt: ${theme.bgAlt};F
-      --main: ${theme.main};
-      --card: ${theme.card};
-      --error: ${theme.error};
-      --sub: ${theme.sub};
-      --text: ${theme.text};
-      }
-      </style>`;
-  }
-
-  updateTheme($userSettingsStore.theme);
-  const unsubscribe = userSettingsStore.subscribe((settings) => {
-    updateTheme(settings.theme);
+  $effect(() => {
+    const root = untrack(() => document.documentElement);
+    if (theme) {
+      root.style.setProperty("--bg", theme.bg);
+      root.style.setProperty("--bg-alt", theme.bgAlt);
+    root.style.setProperty("--main", theme.main);
+    root.style.setProperty("--card", theme.card);
+    root.style.setProperty("--error", theme.error);
+    root.style.setProperty("--sub", theme.sub);
+    root.style.setProperty("--text", theme.text);
+    }
   });
 
-  onMount(() => {
+    onMount(() => {
     updateSafeAreasOnOrientationChange();
   })
-  onDestroy(unsubscribe);
 </script>
 
 <svelte:head>
-  <meta name="theme-color" content={bgColor} />
+  <meta name="theme-color" content="var(--bg)" />
 </svelte:head>
 
-{@html css}
-
-<slot />
+{@render children()}

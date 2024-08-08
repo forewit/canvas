@@ -3,7 +3,7 @@
   import "./quill.css";
   import type Quill from "quill/core";
   import type { Delta } from "quill/core";
-  import { userState } from "$lib/state/userState.svelte";
+  import { userState } from "$lib/State/userState.svelte";
   import { saveContent, loadContent, type EditorContent } from "./utils/editorContent";
   import { detectAndformatLinks } from "./utils/linkFormatting";
   import { bindKeyboardShortcuts } from "./utils/keyboardShortcuts";

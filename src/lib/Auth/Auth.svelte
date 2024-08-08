@@ -1,7 +1,7 @@
 <script lang="ts">
   import { login } from "./authUtils";
-  import { firebaseState } from "$lib/firebase/firebaseState.svelte";
-  import ProgressBar from "../UI/Elements/ProgressBar.svelte";
+  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
+  import ProgressBar from "../components/UI/Elements/ProgressBar.svelte";
   
   let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
 

@@ -1,20 +1,12 @@
-import { auth } from "$lib/Firebase/firebase.client";
-import type { User } from "firebase/auth";
 import type { UserData, Doc } from "$lib/State/userState.svelte";
 
-function SetupFirebaseState() {
-    let user: User | null = $state(null)
+function setupCacheState() {
     let userData: UserData | null = $state(null)
     let docs: Record<string, Doc> = $state({})
     let fetchStatus: undefined | "loading" | "loaded" | "error" = $state()
     let publishStatus: undefined | "saving" | "saved" | "error" = $state()
 
-    auth.onAuthStateChanged((currentUser) => {
-        user = currentUser;
-    });
-
     return {
-        get user() { return user },
         get fetchStatus() { return fetchStatus },
         set fetchStatus(value) { fetchStatus = value },
         get publishStatus() { return publishStatus },
@@ -26,4 +18,4 @@ function SetupFirebaseState() {
     }
 }
 
-export const firebaseState = SetupFirebaseState()
+export const cacheState = setupCacheState()

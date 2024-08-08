@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { logout } from "$lib/components/Auth/authUtils";
+    import { logout } from "$lib/Auth/authUtils";
 </script>
 
 <div class="container">

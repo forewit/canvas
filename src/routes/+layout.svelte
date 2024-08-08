@@ -1,11 +1,9 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { firebaseState } from "$lib/firebase/firebaseState.svelte";
-  import { appState } from "$lib/state/appState.svelte";
-  import { logout } from "$lib/components/Auth/authUtils";
+  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
+  import { appState } from "$lib/State/appState.svelte";
   import { goto } from "$app/navigation";
-  import ThemeWrapper from "$lib/components/UI/ThemeWrapper.svelte";
-  import ProgressBar from "$lib/components/UI/Elements/ProgressBar.svelte";
+  import ThemeWrapper from "$lib/UI/ThemeWrapper.svelte";
 
   let { children }: { children: Snippet } = $props();
 

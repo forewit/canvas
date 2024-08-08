@@ -6,7 +6,7 @@
   import "./styles/UIClasses.css"
   import { themes } from "./utils/themes";
   import { updateSafeAreas } from "./utils/updateSafeAreas";
-  import { userState } from "$lib/state/userState.svelte";
+  import { appState } from "$lib/State/appState.svelte";
   import { untrack, type Snippet } from "svelte";
 
   let { children }: { children: Snippet } = $props();

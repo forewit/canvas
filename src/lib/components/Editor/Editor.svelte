@@ -3,76 +3,68 @@
   import "./quill.css";
   import type Quill from "quill/core";
   import type { Delta } from "quill/core";
-  import {  onMount } from "svelte";
-  import { userSettingsStore } from "$lib/state/userSettings.svelte";
-  import {
-    saveContent,
-    loadContent,
-    type EditorData,
-  } from "./utils/contentManagement";
+  import { userState } from "$lib/state/userState.svelte";
+  import { saveContent, loadContent, type EditorContent } from "./utils/editorContent";
   import { detectAndformatLinks } from "./utils/linkFormatting";
   import { bindKeyboardShortcuts } from "./utils/keyboardShortcuts";
-  import EditorToolbar from "./EditorToolbar.svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
 
-
-  export let editorData: EditorData;
-  export let toolbarElm: EditorToolbar;
-
-  let quill: Quill;
+  let data: EditorContent = $state(getContext("editor"));
+  let quill: Quill | undefined = $state();
   let quillElm: HTMLElement;
 
-  function updateSettings() {
-    if (!quill) return;
-    quill.root.setAttribute(
-      "spellcheck",
-      $userSettingsStore.spellcheck.toString()
-    );
-  }
-
-  async function updateContent() {
-    if (!quill) return;
-    await loadContent(quill, editorData);
-    detectAndformatLinks(quill);
-  }
-
-  function handleInput(newDelta: Delta, oldDelta: Delta, source: string) {
-    if (source === "user") {
+  function quillInput(newDelta: Delta, oldDelta: Delta, source: string) {
+    if (source === "user" && quill) {
       detectAndformatLinks(quill);
       saveContent(quill);
     }
   }
 
-  async function setupEditor() {
-    if (!toolbarElm) throw new Error("Toolbar element not found");
+  // load user content reactively
+  $effect(() => {
+    if (quill && data) {
+      loadContent(quill, data);
+    }
+  });
+
+  // update user settings reactively
+  $effect(() => {
+    if (quill) {
+      quill.root.setAttribute("spellcheck", userState.spellcheck.toString());
+    }
+  });
+
+  // load the quill editor
+  onMount(async () => {
     const { default: Quill } = await import("quill");
 
     quill = new Quill(quillElm, {
-      modules: {
-          toolbar: toolbarElm.toolbarElm
-      },
-      formats: ["size", "align", "indent", "list",  "bold", "italic", "underline", "strike", "code", "link"],
+      formats: [
+        "size",
+        "align",
+        "indent",
+        "list",
+        "bold",
+        "italic",
+        "underline",
+        "strike",
+        "code",
+        "link",
+      ],
       placeholder: "Enter text here",
     });
 
     bindKeyboardShortcuts(quill);
-    updateSettings();
-    updateContent();
-  }
+    quill.on("text-change", quillInput);
+  });
 
-  onMount(() => {
-    setupEditor();
-    quill.on("text-change", handleInput);
-    const unsubscribe = userSettingsStore.subscribe(updateSettings);
-
-    return () => {
-      quill?.off("text-change", handleInput);
-      unsubscribe();
-    };
+  onDestroy(() => {
+    quill?.off("text-change", quillInput);
   });
 </script>
 
 <div class="quill-editor-container">
-  <div class="quill-editor" bind:this={quillElm} />
+  <div class="quill-editor"></div>
 </div>
 
 <style>

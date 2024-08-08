@@ -1,6 +1,8 @@
 <script lang="ts">
   import { login } from "./authUtils";
-
+  import { firebaseState } from "$lib/firebase/firebaseState.svelte";
+  import ProgressBar from "../UI/Elements/ProgressBar.svelte";
+  
   let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
 
   let email = $state("");
@@ -17,8 +19,17 @@
       failedLogin = true;
     }
   }
+
+  $effect(() => {
+    if (firebaseState.user) {
+      onSuccessfulLogin();
+    }
+  });
 </script>
 
+{#if firebaseState.user}
+  <ProgressBar />
+{:else}
 <div class="form-container">
   <form class="form" onsubmit={handleSubmit}>
     <input
@@ -41,6 +52,7 @@
     <input type="submit" value="Login" class="btn" />
   </form>
 </div>
+{/if}
 
 
 <style>

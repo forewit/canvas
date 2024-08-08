@@ -1,26 +1,25 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { base } from "$app/paths";
+  import type { Snippet } from "svelte";
+  import { firebaseState } from "$lib/firebase/firebaseState.svelte";
+  import { appState } from "$lib/state/appState.svelte";
+  import { logout } from "$lib/components/Auth/authUtils";
   import { goto } from "$app/navigation";
-  import { appStore } from "$lib/state/appStore";
-  import { firebaseUser } from "$lib/state/firebaseStore";
+  import ThemeWrapper from "$lib/components/UI/ThemeWrapper.svelte";
+  import ProgressBar from "$lib/components/UI/Elements/ProgressBar.svelte";
 
+  let { children }: { children: Snippet } = $props();
 
+  $effect(() => {
+    appState.authRedirect = window.location.pathname;
+  });
 
-  onMount(() => {
-    firebaseUser.subscribe((user) => {
-      if (user === null) {
-        $appStore.authRedirect = window.location.pathname.slice(base.length);
-        goto(`${base}/login`);
-      }
-    });
+  $effect(() => {
+    if (!firebaseState.user) {
+      goto("/login/");
+    }
   });
 </script>
 
-<svelte:head>
-  <meta
-    name="viewport"
-    content="width=device-width, user-scalable=0, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
-  />
-  <meta name="theme-color" content="var(--bg)" />
-</svelte:head>
+<ThemeWrapper>
+    {@render children()}
+</ThemeWrapper>

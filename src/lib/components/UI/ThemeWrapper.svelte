@@ -1,31 +1,35 @@
 <script lang="ts">
-  import "./UIVariables.css";
-  import "./UIGlobal.css";
+  import "./styles/normalize.css";
+  import "./styles/reset.css"
+  import "./styles/UIVariables.css";
+  import "./styles/UIGlobal.css";
+  import "./styles/UIClasses.css"
   import { themes } from "./utils/themes";
-  import { updateSafeAreasOnOrientationChange } from "./utils/updateSafeAreas";
-  import { themeName } from "$lib/state/userSettings.svelte";
-  import {onMount, untrack, type Snippet } from 'svelte';
+  import { updateSafeAreas } from "./utils/updateSafeAreas";
+  import { userState } from "$lib/state/userState.svelte";
+  import { untrack, type Snippet } from "svelte";
 
   let { children }: { children: Snippet } = $props();
 
-  let theme = $derived(themes.find((t) => t.name === themeName));
+  let theme = $derived(themes.find((t) => t.name === userState.themeName));
 
   $effect(() => {
     const root = untrack(() => document.documentElement);
     if (theme) {
       root.style.setProperty("--bg", theme.bg);
       root.style.setProperty("--bg-alt", theme.bgAlt);
-    root.style.setProperty("--main", theme.main);
-    root.style.setProperty("--card", theme.card);
-    root.style.setProperty("--error", theme.error);
-    root.style.setProperty("--sub", theme.sub);
-    root.style.setProperty("--text", theme.text);
+      root.style.setProperty("--main", theme.main);
+      root.style.setProperty("--card", theme.card);
+      root.style.setProperty("--error", theme.error);
+      root.style.setProperty("--sub", theme.sub);
+      root.style.setProperty("--text", theme.text);
     }
   });
 
-    onMount(() => {
-    updateSafeAreasOnOrientationChange();
-  })
+  $effect(() => {
+    screen.orientation.addEventListener("change", updateSafeAreas);
+    return () => screen.orientation.removeEventListener("change", updateSafeAreas);
+  });
 </script>
 
 <svelte:head>

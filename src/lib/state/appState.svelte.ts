@@ -1,16 +1,22 @@
+import { getContext, onDestroy, setContext } from "svelte";
 
-function setupAppState() {
-    let authRedirect = $state("");
-  
-    return {
-      get authRedirect() {
-        return authRedirect;
-      },
-      set authRedirect(value) {
-        authRedirect = value;
-      },
-    };
-  }
-  
-  export const appState = setupAppState()
+class AppState {
+    authRedirect = $state("");
+
+    constructor() {
+        onDestroy(() => {
+          
+        })
+    }
+}
+
+const APPSTATE_KEY = Symbol("APPSTATE");
+
+export function setAppState() {
+    return setContext(APPSTATE_KEY, new AppState())
+}
+
+export function getAppState() {
+    return getContext<ReturnType<typeof setAppState>>(APPSTATE_KEY)
+}
   

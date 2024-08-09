@@ -1,54 +1,32 @@
 
-import type { EditorContent } from "$lib/Editor/utils/editorContent";
 
-export type Doc = {
-  id: string;
-  timestamp: number;
-  title: string;
-  content: EditorContent;
+import { getContext, onDestroy, setContext } from "svelte";
+
+export type Settings ={
+  themeName: string,
+  spellcheck: boolean
 }
 
-export type UserData = {
-  timestamp: number;
-  themeName: string;
-  spellcheck: boolean;
-  docOrder: string[],
-}
-
-export const getDefaultUserData = (): UserData => {
-  return {
-    timestamp: Date.now(),
+class UserState {
+  lastUpdated: number = $state(Date.now());
+  settings: Settings = $state({
     themeName: "Canvas",
-    spellcheck: true,
-    docOrder: [],
+    spellcheck: true
+  })
+
+  constructor() {
+    onDestroy(() => {
+
+    })
   }
 }
-export const userState = setupUserState()
 
+const USERSTATE_KEY = Symbol("USERSTATE");
 
-function setupUserState() {
-  let themeName = $state("Canvas")
-  let spellcheck = $state(true);
-  let docs: Record<string, Doc> = $state({})
+export function setUserState() {
+  return setContext(USERSTATE_KEY, new UserState())
+}
 
-  return {
-    get themeName() {
-      return themeName;
-    },
-    set themeName(value) {
-      themeName = value;
-    },
-    get spellcheck() {
-      return spellcheck;
-    },
-    set spellcheck(value) {
-      spellcheck = value;
-    },
-    get docs() {
-      return docs
-    },
-    set docs(value) {
-      docs = value
-    }
-  };
+export function getUserState() {
+  return getContext<ReturnType<typeof setUserState>>(USERSTATE_KEY)
 }

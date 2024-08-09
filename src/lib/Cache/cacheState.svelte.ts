@@ -1,8 +1,8 @@
-import type { UserData, Doc } from "$lib/State/userState.svelte";
+import type { UserData, Page } from "$lib/State/userState.svelte";
 
 function setupCacheState() {
     let userData: UserData | null = $state(null)
-    let docs: Record<string, Doc> = $state({})
+    let docs: Record<string, Page> = $state({})
     let fetchStatus: undefined | "loading" | "loaded" | "error" = $state()
     let publishStatus: undefined | "saving" | "saved" | "error" = $state()
 

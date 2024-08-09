@@ -1,10 +1,12 @@
 <script lang="ts">
   import { login } from "./authUtils";
-  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
+  import { getFirebaseState } from "$lib/Firebase/firebaseState.svelte";
   import ProgressBar from "$lib/UI/ProgressBar.svelte";
   
-  let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
+  const firebaseState = getFirebaseState();
 
+  let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
+  
   let email = $state("");
   let password = $state("");
   let failedLogin = $state(false);
@@ -30,7 +32,6 @@
 {#if firebaseState.user}
   <ProgressBar />
 {:else}
-<div class="form-container">
   <form class="form" onsubmit={handleSubmit}>
     <input
       class="email"
@@ -51,25 +52,15 @@
     {/if}
     <input type="submit" value="Login" class="btn" />
   </form>
-</div>
 {/if}
 
 
 <style>
-  .form-container {
-    width: 100%;
-    height:100%;
-    background-color: var(--bg);
-  }
 
   .form {
     font-family: var(--ui-font);
     font-size: var(--ui-font-size);
 
-    position: absolute;
-    top: 40px;
-    left: 50%;
-    transform: translateX(-50%);
     width: 305px;
     background-color: var(--bg-alt);
     padding: 20px 24px;

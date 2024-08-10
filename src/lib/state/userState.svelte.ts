@@ -8,7 +8,7 @@ export type Settings ={
 }
 
 class UserState {
-  lastUpdated: number = $state(Date.now());
+  lastUpdated: number = $state(0);
   settings: Settings = $state({
     themeName: "Canvas",
     spellcheck: true

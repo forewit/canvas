@@ -1,6 +1,7 @@
 import { getFirebaseState } from "$lib/Firebase/firebaseState.svelte";
 import { untrack } from "svelte";
 import { getUserState } from "../../State/userState.svelte";
+import { publishUserSettingsToFirestore } from "./publishToFirestoreDocs.svelte";
 
 
 export const syncUserSettingsFromFirestore = function () {
@@ -11,16 +12,22 @@ export const syncUserSettingsFromFirestore = function () {
         if (!firebaseState.userDocData ||
             !firebaseState.userDocData.lastUpdated ||
             !firebaseState.userDocData.settings ||
-            typeof firebaseState.userDocData.lastUpdated !== 'number') return;
+            typeof firebaseState.userDocData.lastUpdated !== 'number') {
+                untrack(() => {
+                    console.warn("No user data to sync from firestore. Publishing local user state");
+                    publishUserSettingsToFirestore();
+                })
+                return;
+            }
 
         untrack(() => {
             if (userState.lastUpdated < firebaseState.userDocData.lastUpdated) {
-                console.warn("Overwriting user state with more recent data from firestore");
+                console.warn("Overwriting local user state with more recent firestore data");
                 userState.settings = { ...userState.settings, ...firebaseState.userDocData.settings };
             } else {
-                //TODO publish user state to firestore
+                console.warn("Overwriting firestore data with more recent localuser state");
+                publishUserSettingsToFirestore();
             }
         })
-
     })
 }

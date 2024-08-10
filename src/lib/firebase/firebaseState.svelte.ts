@@ -8,6 +8,7 @@ class FirebaseState {
     private _user: User | null = $state(null)
 
     userDocData = $state<any>({});
+    isPublishing = $state(false);
     isLoading = $state(true)
     get user() { return this._user }
 
@@ -16,7 +17,7 @@ class FirebaseState {
             this._user = currentUser
             this.isLoading = false
         })
-        
+
         $effect(() => {
             if (this.user) {
                 console.warn("Subscribing to user");

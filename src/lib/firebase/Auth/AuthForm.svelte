@@ -1,10 +1,8 @@
 <script lang="ts">
   import { login } from "./authUtils";
-  import { getFirebaseState } from "$lib/Firebase/firebaseState.svelte";
+  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
   import ProgressBar from "$lib/UI/ProgressBar.svelte";
   
-  const firebaseState = getFirebaseState();
-
   let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
   
   let email = $state("");

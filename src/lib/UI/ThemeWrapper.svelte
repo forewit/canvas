@@ -13,7 +13,7 @@
 
   const userState = getUserState();
 
-  let theme = $derived(themes.find((t) => t.name === userState.settings.themeName));
+  let theme = $derived(themes.find((t) => t.name === userState.themeName));
 
   $effect(() => {
     const root = untrack(() => document.documentElement);

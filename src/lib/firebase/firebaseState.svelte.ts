@@ -1,47 +1,44 @@
 import { auth } from "$lib/Firebase/firebase.client";
 import type { User } from "firebase/auth";
-import { getContext, onDestroy, setContext } from "svelte";
-import { fetchUserDocOnSnapshot } from "./Firestore/fetchFirestoreDocs.svelte";
-import { syncUserSettingsFromFirestore } from "./Firestore/syncUserSettingsFromFirestore.svelte";
+import { fetchPagesCollectionOnSnapshot, fetchUserDocOnSnapshot } from "./Firestore/fetchFirestoreDocs.svelte";
 
 class FirebaseState {
     private _user: User | null = $state(null)
+    private _unsubscribeAuth: () => void;
+    private _unsubscribeUserDoc: () => void = () => { };
+    private _unsubscribePagesCollection: () => void = () => { };
 
-    userDocData = $state<any>({});
+    userDoc = $state<any>({});
+    pageDocs = $state<Record<string, any>>({});
     isPublishing = $state(false);
     isLoading = $state(true)
     get user() { return this._user }
 
     constructor() {
-        const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+        this._unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
             this._user = currentUser
             this.isLoading = false
+            this.onAuthChange()
         })
+    }
 
-        $effect(() => {
-            if (this.user) {
-                console.warn("Subscribing to user");
-                const unsubscribe = fetchUserDocOnSnapshot()
-                return ()=>{
-                    console.warn("Unsubscribing from user");
-                    unsubscribe()
-                }
-            }
-        })
+    private onAuthChange() {
+        if (this.user) {
+            console.warn("Subscribing to user");
+            this._unsubscribeUserDoc = fetchUserDocOnSnapshot()
+            this._unsubscribePagesCollection = fetchPagesCollectionOnSnapshot()
+        } else {
+            console.warn("Unsubscribing from user");
+            this._unsubscribeUserDoc();
+            this._unsubscribePagesCollection();
+        }
+    }
 
-        onDestroy(() => {
-            console.warn("Unsubscribing from auth");
-            unsubscribe()
-        })
+    destroy() {
+        this._unsubscribeAuth();
+        this._unsubscribeUserDoc();
+        this._unsubscribePagesCollection();
     }
 }
 
-const FIREBASE_KEY = Symbol("FIREBASE");
-
-export function setFirebaseState() {
-    return setContext(FIREBASE_KEY, new FirebaseState())
-}
-
-export function getFirebaseState() {
-    return getContext<ReturnType<typeof setFirebaseState>>(FIREBASE_KEY)
-}
+export const firebaseState = new FirebaseState();

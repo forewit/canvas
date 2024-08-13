@@ -8,17 +8,16 @@ export class UserState {
   private _updateCallbacks: Array<() => void> = [];
 
   constructor() {
-    
+
   }
 
   get themeName() { return this._themeName }
-  set themeName(value) { this._themeName = value; this.update()}
+  set themeName(value) { this._themeName = value }
   get spellcheck() { return this._spellcheck }
-  set spellcheck(value) { this._spellcheck = value; this.update()}
+  set spellcheck(value) { this._spellcheck = value }
   get lastUpdated() { return this._lastUpdated }
 
-
-  private update() {
+  triggerUpdate() {
     this._lastUpdated = Date.now();
     this._updateCallbacks.forEach(callback => callback());
   }
@@ -28,12 +27,4 @@ export class UserState {
   }
 }
 
-const USERSTATE_KEY = Symbol("USERSTATE");
-
-export function setUserState() {
-  return setContext(USERSTATE_KEY, new UserState())
-}
-
-export function getUserState() {
-  return getContext<ReturnType<typeof setUserState>>(USERSTATE_KEY)
-}
+export const userState = new UserState();

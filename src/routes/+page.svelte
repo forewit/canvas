@@ -1,11 +1,8 @@
 <script lang="ts">
   import { logout } from "$lib/Firebase/Auth/authUtils";
-  import { UserState } from "$lib/State/userState.svelte";
-  import { getUserState } from "$lib/State/userState.svelte";
-  import { getPagesState } from "$lib/State/pagesState.svelte";
+  import { userState } from "$lib/State/userState.svelte";
+  import { pagesState } from "$lib/State/pagesState.svelte";
 
-  const userState = getUserState();
-  const pagesState = getPagesState();
 
   function addPage() {
     pagesState.createPage();
@@ -13,7 +10,7 @@
 
   function changeSettings() {
     userState.spellcheck = !userState.spellcheck;
-    console.log(userState.spellcheck);
+    userState.triggerUpdate();
   }
 </script>
 
@@ -24,7 +21,7 @@
 
   <ul>
     {#each Object.entries(pagesState.pages) as [key, value]}
-      <li>{key}: {value}</li>
+      <li>🪪{key}📄{value.title}</li>
     {/each}
   </ul>
 </div>

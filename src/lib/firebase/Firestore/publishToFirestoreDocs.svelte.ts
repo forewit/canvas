@@ -1,11 +1,10 @@
-import { getUserState } from "$lib/State/userState.svelte";
+import { userState } from "$lib/State/userState.svelte";
 import { firebaseState } from "../firebaseState.svelte";
-import { getPagesState } from "$lib/State/pagesState.svelte";
+import { pagesState } from "$lib/State/pagesState.svelte";
 import { db } from "../firebase.client";
 import { doc, updateDoc } from "firebase/firestore";
 
 export async function publishPagesStateToFirestore(id: string) {
-    const pagesState = getPagesState();
     const user = firebaseState.user;
 
     if (!user) {
@@ -32,7 +31,6 @@ export async function publishPagesStateToFirestore(id: string) {
 }
 
 export async function publishUserStateSettingsToFirestore() {
-    const userState = getUserState();
     const user = firebaseState.user;
 
     if (!user) {
@@ -44,7 +42,7 @@ export async function publishUserStateSettingsToFirestore() {
     const userRef = doc(db, "users", user.uid);
 
     try {
-        console.log("Publishing settings to firestore user doc...");
+        console.log("Publishing user State to firestore user doc...");
         await updateDoc(
             userRef,
             {

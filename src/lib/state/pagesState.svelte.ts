@@ -1,5 +1,3 @@
-import { getContext, setContext } from "svelte";
-
 export type Page = {
   readonly id: string,
   readonly lastUpdated: number,
@@ -7,7 +5,7 @@ export type Page = {
   content: string
 }
 
-export class PagesState {
+class PagesState {
   pages: Record<string, Page> = $state({});
 
   constructor() {
@@ -30,12 +28,4 @@ export class PagesState {
   }
 }
 
-const PAGESSTATE_KEY = Symbol("PAGESSTATE");
-
-export function setPagesState() {
-  return setContext(PAGESSTATE_KEY, new PagesState())
-}
-
-export function getPagesState() {
-  return getContext<ReturnType<typeof setPagesState>>(PAGESSTATE_KEY)
-}
+export const pagesState = new PagesState();

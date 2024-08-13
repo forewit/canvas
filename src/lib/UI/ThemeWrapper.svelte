@@ -6,12 +6,10 @@
   import "./styles/UIClasses.css"
   import { themes } from "./utils/themes";
   import { updateSafeAreas } from "./utils/updateSafeAreas";
-  import { getUserState } from "$lib/State/userState.svelte";
+  import { userState } from "$lib/State/userState.svelte";
   import { untrack, type Snippet } from "svelte";
 
   let { children }: { children: Snippet } = $props();
-
-  const userState = getUserState();
 
   let theme = $derived(themes.find((t) => t.name === userState.themeName));
 

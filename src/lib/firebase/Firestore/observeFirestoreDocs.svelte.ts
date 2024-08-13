@@ -2,7 +2,7 @@ import { db } from "../firebase.client";
 import { doc, onSnapshot, setDoc, collection,  } from "firebase/firestore";
 import { firebaseState } from "../firebaseState.svelte";
 
-export const fetchPagesCollectionOnSnapshot = function () {
+export const observePagesCollection = function () {
     if (!firebaseState.user) {
         console.warn("No user to fetch to page doc for.");
         return () => { };
@@ -25,7 +25,7 @@ export const fetchPagesCollectionOnSnapshot = function () {
     });
 }
 
-export const fetchUserDocOnSnapshot = function () {
+export const observeUserDoc = function () {
     if (!firebaseState.user) {
         console.warn("No user to fetch to user doc for.");
         return () => { };
@@ -40,13 +40,14 @@ export const fetchUserDocOnSnapshot = function () {
                 console.log("Creating firestore user doc...");
                 setDoc(userDocRef, {}, { merge: true });
             } else {
-                console.log("Firestore user doc updated.");
+                console.log("Fetched firestore user doc.");
                 const fetchedData = userDocSnap.data();
                 firebaseState.userDoc = fetchedData;
+                firebaseState.triggerUserDocUpdate();
             }
         },
         (error) => {
-            console.error("Error while updating firestore user doc", error)
+            console.error("Error while fetching firestore user doc", error)
         }
     );
 }

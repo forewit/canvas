@@ -2,15 +2,25 @@
   import { logout } from "$lib/Firebase/Auth/authUtils";
   import { userState } from "$lib/State/userState.svelte";
   import { pagesState } from "$lib/State/pagesState.svelte";
-
+  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
 
   function addPage() {
-    pagesState.createPage();
+    pagesState.createPage();    
   }
 
   function changeSettings() {
     userState.spellcheck = !userState.spellcheck;
     userState.triggerUpdate();
+  }
+
+  function clickPage(id: string) {
+      pagesState.pages[id].title = "Title" + Math.random().toString().slice(2, 4);
+  }
+
+  function rightClickPage(e:MouseEvent, id: string) {
+    e.preventDefault();
+    delete pagesState.pages[id];
+    //pagesState.notifyPagesObservers(id);
   }
 </script>
 
@@ -19,11 +29,9 @@
   <button class="ui-card" onclick={changeSettings}>Change Settings</button>
   <button class="ui-card" onclick={logout}>Logout</button>
 
-  <ul>
-    {#each Object.entries(pagesState.pages) as [key, value]}
-      <li>🪪{key}📄{value.title}</li>
-    {/each}
-  </ul>
+  {#each Object.entries(pagesState.pages) as [id, page] (page)}
+    <button oncontextmenu={(e) => rightClickPage(e, id)} onclick={() => clickPage(id)} class="ui-card">📄{id.slice(0, 4)}: {page.title}</button>
+  {/each}
 </div>
 
 <style>

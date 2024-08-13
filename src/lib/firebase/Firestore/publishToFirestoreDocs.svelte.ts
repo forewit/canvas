@@ -2,9 +2,9 @@ import { userState } from "$lib/State/userState.svelte";
 import { firebaseState } from "../firebaseState.svelte";
 import { pagesState } from "$lib/State/pagesState.svelte";
 import { db } from "../firebase.client";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 
-export async function publishPagesStateToFirestore(id: string) {
+export async function publishPageToFirestore(id: string) {
     const user = firebaseState.user;
 
     if (!user) {
@@ -13,7 +13,8 @@ export async function publishPagesStateToFirestore(id: string) {
     }
 
     if (!pagesState.pages[id]) {
-        console.warn("No page to publish to firestore user doc.");
+        console.warn("deleting page from firestore: ", id.slice(0, 4));
+        await deleteDoc(doc(db, "users", user.uid, "pages", id));
         return
     }
 
@@ -21,8 +22,12 @@ export async function publishPagesStateToFirestore(id: string) {
     const pageRef = doc(db, "users", user.uid, "pages", id);
 
     try {
-        console.log("Publishing page to firestore...");
-        await updateDoc(pageRef, pagesState.pages[id]);
+        console.log(`Publishing page to firestore: ${id.slice(0,4)}...`);
+        if (firebaseState.pageDocs[id]) {
+            await updateDoc(pageRef, pagesState.pages[id]);
+        } else {
+            await setDoc(pageRef, pagesState.pages[id]);
+        }
     } catch (err) {
         console.error("Error while publishing page to firestore", err);
     } finally {
@@ -30,7 +35,7 @@ export async function publishPagesStateToFirestore(id: string) {
     }
 }
 
-export async function publishUserStateSettingsToFirestore() {
+export async function publishUserSettingsToFirestore() {
     const user = firebaseState.user;
 
     if (!user) {

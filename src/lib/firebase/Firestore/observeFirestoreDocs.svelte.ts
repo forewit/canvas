@@ -16,10 +16,15 @@ export const observePagesCollection = function () {
             const docId = change.doc.id
 
             if (change.type === "added" || change.type === "modified") {
-                firebaseState.pageDocs[docId] = docData;
+                console.log("Fetched firestore pageDoc" + ((change.doc.metadata.hasPendingWrites || change.doc.metadata.fromCache ? " (local):" : ":")), docId.slice(0, 4));
+                firebaseState.updatePageDoc(docId, docData);
+                firebaseState.notifyPageDocObservers(docId);
             }
-            if (change.type === "removed") {
+            else if (change.type === "removed") {
+                console.log("Firestore pageDoc removed" + ((change.doc.metadata.hasPendingWrites || change.doc.metadata.fromCache ? " (local):" : ":")), docId.slice(0, 4));
+
                 delete firebaseState.pageDocs[docId];
+                firebaseState.notifyPageDocObservers(docId);
             }
         });
     });
@@ -30,7 +35,6 @@ export const observeUserDoc = function () {
         console.warn("No user to fetch to user doc for.");
         return () => { };
     }
-
     const userDocRef = doc(db, "users", firebaseState.user.uid);
 
     return onSnapshot(
@@ -40,12 +44,10 @@ export const observeUserDoc = function () {
                 console.log("Creating firestore user doc...");
                 setDoc(userDocRef, {}, { merge: true });
             } else {
-                console.log("Fetched firestore userDoc. fromCache:", userDocSnap.metadata.fromCache,
-                    "hasPendingWrites:", userDocSnap.metadata.hasPendingWrites
-                );
+                console.log("Fetched firestore userDoc" + (userDocSnap.metadata.hasPendingWrites || userDocSnap.metadata.fromCache ? " (local):" : ":"), firebaseState.user?.email);
                 const fetchedData = userDocSnap.data();
                 firebaseState.userDoc = fetchedData;
-                firebaseState.triggerUserDocUpdate();
+                firebaseState.notifyUserDocObservers();
             }
         },
         (error) => {

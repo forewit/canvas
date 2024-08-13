@@ -22,11 +22,9 @@ export class UserState {
 
   subscribe(fn: Function) {
     this._observers.push(fn);
-    return () => this.unsubscribe(fn);
-  }
-
-  unsubscribe(fn: Function) {
-    this._observers = this._observers.filter(observer => observer !== fn);
+    return () => {
+      this._observers = this._observers.filter(observer => observer !== fn);
+    }
   }
 }
 

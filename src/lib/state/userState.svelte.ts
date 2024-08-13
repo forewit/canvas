@@ -1,11 +1,8 @@
-import { getContext, setContext } from "svelte";
-
-
 export class UserState {
   private _lastUpdated: number = $state(0);
   private _themeName: string = $state("Canvas");
   private _spellcheck: boolean = $state(true);
-  private _updateCallbacks: Array<() => void> = [];
+  private _observers: Function[] = [];
 
   constructor() {
 
@@ -17,13 +14,19 @@ export class UserState {
   set spellcheck(value) { this._spellcheck = value }
   get lastUpdated() { return this._lastUpdated }
 
+
   triggerUpdate() {
     this._lastUpdated = Date.now();
-    this._updateCallbacks.forEach(callback => callback());
+    this._observers.forEach(fn => fn());
   }
 
-  onUpdate(callback: () => void) {
-    this._updateCallbacks.push(callback);
+  subscribe(fn: Function) {
+    this._observers.push(fn);
+    return () => this.unsubscribe(fn);
+  }
+
+  unsubscribe(fn: Function) {
+    this._observers = this._observers.filter(observer => observer !== fn);
   }
 }
 

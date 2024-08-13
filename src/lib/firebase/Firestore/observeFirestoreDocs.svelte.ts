@@ -1,5 +1,5 @@
 import { db } from "../firebase.client";
-import { doc, onSnapshot, setDoc, collection,  } from "firebase/firestore";
+import { doc, onSnapshot, setDoc, collection, } from "firebase/firestore";
 import { firebaseState } from "../firebaseState.svelte";
 
 export const observePagesCollection = function () {
@@ -40,7 +40,9 @@ export const observeUserDoc = function () {
                 console.log("Creating firestore user doc...");
                 setDoc(userDocRef, {}, { merge: true });
             } else {
-                console.log("Fetched firestore user doc.");
+                console.log("Fetched firestore userDoc. fromCache:", userDocSnap.metadata.fromCache,
+                    "hasPendingWrites:", userDocSnap.metadata.hasPendingWrites
+                );
                 const fetchedData = userDocSnap.data();
                 firebaseState.userDoc = fetchedData;
                 firebaseState.triggerUserDocUpdate();

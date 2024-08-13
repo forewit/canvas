@@ -3,7 +3,7 @@ import { userState } from "../../State/userState.svelte";
 import { pagesState } from "$lib/State/pagesState.svelte";
 import { publishUserStateSettingsToFirestore, publishPagesStateToFirestore } from "./publishToFirestoreDocs.svelte";
 
-export const syncPagesStatePagesWithFirestore = function () {
+//export const syncPagesStatePagesWithFirestore = function () {
 
     // $effect(() => {
     //     Object.entries(firebaseState.pageDocs).forEach(([id, page]) => {
@@ -29,18 +29,17 @@ export const syncPagesStatePagesWithFirestore = function () {
     //     })
 
     // })
-}
+//}
 
 export const syncUserStateWithFirestore = function () {
-
-    userState.onUpdate(() => {
+    const unsubscribeUserState = userState.subscribe(() => {
         //console.log("userState Updated... more recent? ", userState.lastUpdated > firebaseState.userDoc.lastUpdated)
         if (userState.lastUpdated > firebaseState.userDoc.lastUpdated) {
             publishUserStateSettingsToFirestore();
         }
     })
 
-    firebaseState.onUserDocUpdate(() => {
+    const unsubscribeFromFirebaseStateUserDoc = firebaseState.subscribeToUserDoc(() => {
         //console.log("firebaseState userDoc updated... more recent? ", firebaseState.userDoc.lastUpdated > userState.lastUpdated)
         
         if (firebaseState.userDoc.lastUpdated === userState.lastUpdated) {
@@ -48,7 +47,7 @@ export const syncUserStateWithFirestore = function () {
             return
         } else if (firebaseState.userDoc.lastUpdated > userState.lastUpdated) {
             console.log("userState updated.")
-
+            
             // update each userState property
             if (firebaseState.userDoc.themeName !== undefined) userState.themeName = firebaseState.userDoc.themeName;
             if (firebaseState.userDoc.spellcheck !== undefined) userState.spellcheck = firebaseState.userDoc.spellcheck;
@@ -56,4 +55,9 @@ export const syncUserStateWithFirestore = function () {
             publishUserStateSettingsToFirestore();
         }
     })
+
+    return () => {
+        unsubscribeUserState();
+        unsubscribeFromFirebaseStateUserDoc();
+    }
 }

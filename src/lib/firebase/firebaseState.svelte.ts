@@ -1,15 +1,16 @@
 import { auth } from "$lib/Firebase/firebase.client";
 import type { User } from "firebase/auth";
 import { observePagesCollection, observeUserDoc } from "./Firestore/observeFirestoreDocs.svelte";
-import { syncPagesStatePagesWithFirestore, syncUserStateWithFirestore } from "./Firestore/syncStateWithFirestore.svelte";
+import { syncUserStateWithFirestore } from "./Firestore/syncStateWithFirestore.svelte";
 
 
 class FirebaseState {
     private _user: User | null = $state(null)
-    private _unsubscribeAuth: () => void;
-    private _unsubscribeUserDoc: () => void = () => { };
-    private _unsubscribePagesCollection: () => void = () => { };
-    private _userDocUpdateCallbacks: Array<() => void> = [];
+    private _unsubscribeAuth: Function;
+    private _unsubscribeUserDoc: Function = () => { };
+    private _unsubscribeUserDocSync: Function = () => { };
+    private _unsubscribePagesCollection: Function = () => { };
+    private _userDocObservers: Function[] = [];
 
     userDoc = $state<any>({});
     pageDocs = $state<Record<string, any>>({});
@@ -30,22 +31,26 @@ class FirebaseState {
             console.warn("Subscribing to user.");
             this._unsubscribeUserDoc = observeUserDoc()
             this._unsubscribePagesCollection = observePagesCollection()
-
-            syncUserStateWithFirestore()
-            syncPagesStatePagesWithFirestore()
+            this._unsubscribeUserDocSync = syncUserStateWithFirestore()
         } else {
             console.warn("Unsubscribing from user.");
             this._unsubscribeUserDoc();
             this._unsubscribePagesCollection();
+            this._unsubscribeUserDocSync();
         }
     }
 
-    onUserDocUpdate(callback: () => void) {
-        this._userDocUpdateCallbacks.push(callback);
+    subscribeToUserDoc(fn: Function) {
+        this._userDocObservers.push(fn);
+        return () => this.unsubscribeFromUserDoc(fn);
+    }
+
+    unsubscribeFromUserDoc(fn: Function) {
+        this._userDocObservers = this._userDocObservers.filter(observer => observer !== fn);
     }
 
     triggerUserDocUpdate() {
-        this._userDocUpdateCallbacks.forEach(callback => callback());
+        this._userDocObservers.forEach(callback => callback());
     }
 
     destroy() {
@@ -53,6 +58,7 @@ class FirebaseState {
         this._unsubscribeAuth();
         this._unsubscribeUserDoc();
         this._unsubscribePagesCollection();
+        this._unsubscribeUserDocSync();
     }
 }
 

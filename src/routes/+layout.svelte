@@ -5,16 +5,10 @@
   import { goto } from "$app/navigation";
   import ThemeWrapper from "$lib/UI/ThemeWrapper.svelte";
   import ProgressBar from "$lib/UI/ProgressBar.svelte";
-  import {
-    syncUserStateWithFirestore,
-    syncPagesStatePagesWithFirestore,
-  } from "$lib/Firebase/Firestore/syncStateWithFirestore.svelte";
 
   let { children }: { children: Snippet } = $props();
 
-  const appState = setAppState();
-
-
+  const appState = setAppState()
 
   $effect(() => {
     appState.authRedirect = window.location.pathname;

@@ -1,84 +1,89 @@
-import { page } from "$app/stores";
-
 export type Page = {
-    //readonly id: string,
     lastUpdated: number,
     title: string,
     content: string
 }
 
-class PagesState {
-    private _pagesObservers: ((id: string) => void)[] = [];
-    private _pages: Record<string, Page> = $state({});
 
-    constructor() {
-        const notifier = this.notifyPagesObservers.bind(this);
 
-        this._pages = new Proxy(this._pages, {
-            deleteProperty(target: any, prop: any) {
-                if (prop in target) {
-                    delete target[prop];
-                    notifier(prop);
-                    return true;
-                }
-                return false
+type PagesState = {
+    readonly pages: Record<string, Page>,
+    readonly subscribe: (fn: Function) => () => void,
+    readonly newPage: (data?: Page) => string,
+}
+
+function createPagesState(): PagesState {
+    let observers: Function[] = [];
+    let pages: Record<string, Page> = $state({});
+
+    pages = new Proxy(pages, {
+        set(target: Record<string, Page>, prop: string, value: Page) {
+            if (value === target[prop]) return true
+            target[prop] = setupPage(prop, value);
+            notifyObservers(prop);
+            return true
+        },
+        deleteProperty(target: any, prop: any) {
+            if (prop in target) {
+                delete target[prop];
+                notifyObservers(prop);
+                return true;
             }
-        })
-    }
-
-    private notifyPagesObservers(id: string) {
-        console.log(id)
-        this._pagesObservers.forEach(fn => fn(id));
-    }
-
-    get pages() { return this._pages }
-
-    createPage(data?: { id: string, page: Page }, notifyObservers = true) {
-        let id: string = crypto.randomUUID();
-        let title = $state("Untitled");
-        let content = $state("");
-        let lastUpdated = $state(Date.now());
-
-        if (data) {
-            id = data.id || id;
-            title = data.page.title || title;
-            content = data.page.content || content;
-            lastUpdated = data.page.lastUpdated || lastUpdated;
+            return false
         }
+    })
 
-        const pagesState = this;
+    const setupPage = function (id: string, page: Page): Page {
+        let lastUpdated = $state(page.lastUpdated);
+        let title = $state(page.title);
+        let content = $state(page.content);
 
-        pagesState._pages[id] = {
+        return {
             get lastUpdated() { return lastUpdated },
-            set lastUpdated(value) { lastUpdated = value },
             get title() { return title },
             set title(value) {
-                if (value === title) return
+                if (value === title) return;
                 title = value;
                 lastUpdated = Date.now();
-                pagesState.notifyPagesObservers(id)
+                notifyObservers(id);
             },
             get content() { return content },
             set content(value) {
                 if (value === content) return
-                content = value;
-                lastUpdated = Date.now();
-                pagesState.notifyPagesObservers(id)
-            },
+                content = value
+                lastUpdated = Date.now()
+                notifyObservers(id)
+            }
         }
+    }
 
-        if (notifyObservers) {
-            this.notifyPagesObservers(id);
+    const newPage = function (data?: Page): string {
+        const id = crypto.randomUUID();
+        const page = data || {
+            lastUpdated: Date.now(),
+            title: "Untitled",
+            content: ""
         }
+        pages[id] = page
         return id;
     }
 
-    subscribe(fn: (id: string) => void) {
-        this._pagesObservers.push(fn);
+    const subscribe = function (fn: Function) {
+        observers.push(fn);
         return () => {
-            this._pagesObservers = this._pagesObservers.filter(observer => observer !== fn);
+            observers = observers.filter(observer => observer !== fn);
         }
+    }
+
+    const notifyObservers = function (id: string) {
+        observers.forEach(fn => fn(id));
+    }
+
+    return {
+        get pages() { return pages },
+        get subscribe() { return subscribe },
+        get newPage() { return newPage },
     }
 }
 
-export const pagesState = new PagesState();
+export const pagesState = createPagesState();

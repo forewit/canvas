@@ -1,89 +1,110 @@
 import { auth } from "$lib/Firebase/firebase.client";
 import type { User } from "firebase/auth";
 import { observePagesCollection, observeUserDoc } from "./Firestore/observeFirestoreDocs.svelte";
-import { syncUserAndFirebaseState, syncPagesAndFirebaseState } from "./Firestore/syncStateWithFirestore.svelte";
+import { syncUserAndFirebaseState, syncPagesAndFirebaseState } from "./Firestore/syncStatesWithFirestore.svelte";
 
-
-class FirebaseState {
-    private _user: User | null = $state(null)
-    private _userDocObservers: (()=>void)[] = [];
-    private _pageDocsObservers: ((id: string)=>void)[] = [];
-    private _pageDocs = $state<Record<string, any>>({});
-
-    // unsubscribers
-    private _unsubscribeAuth: Function;
-    private _unsubscribeUserDoc: Function = () => { };
-    private _unsubscribePagesCollection: Function = () => { };
-    private _unsubscribeSyncUserState: Function = () => { };
-    private _unsubscribeSyncPagesState: Function = () => { };
-
-    userDoc = $state<any>({});
-    isPublishing = $state(false);
-    isLoading = $state(true)
-    get user() { return this._user }
-    get pageDocs() { return this._pageDocs }
-
-    constructor() {
-        this._unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
-            this._user = currentUser
-            this.isLoading = false
-            this.onAuthChange()
-        })
-    }
-
-    private onAuthChange() {
-        if (this.user) {
-            console.warn("Subscribing to user.");
-            this._unsubscribeUserDoc = observeUserDoc()
-            this._unsubscribePagesCollection = observePagesCollection()
-            this._unsubscribeSyncUserState = syncUserAndFirebaseState()
-            this._unsubscribeSyncPagesState = syncPagesAndFirebaseState()
-        } else {
-            console.warn("Unsubscribing from user.");
-            this._unsubscribeUserDoc();
-            this._unsubscribePagesCollection();
-            this._unsubscribeSyncUserState();
-            this._unsubscribeSyncPagesState();
-        }
-    }
-
-    updatePageDoc(id: string, data: any) {
-        this._pageDocs[id] = { ...this._pageDocs[id], ...data };
-    }
-
-    notifyUserDocObservers() {
-        this._userDocObservers.forEach(callback => callback());
-    }
-
-    subscribeToUserDoc(fn: () => void) {
-        this._userDocObservers.push(fn);
-        return () => {
-            this._userDocObservers = this._userDocObservers.filter(observer => observer !== fn);
-        }
-    }
-
-    notifyPageDocObservers(id: string) {
-        this._pageDocsObservers.forEach(fn => fn(id));
-    }
-
-    subscribeToPageDocs(fn: (id: string) => void) {
-        this._pageDocsObservers.push(fn);
-        return () => {
-            this._pageDocsObservers = this._pageDocsObservers.filter(observer => observer !== fn);
-        }
-
-    }
-
-
-
-    destroy() {
-        console.warn("Destroying FirebaseState.");
-        this._unsubscribeAuth();
-        this._unsubscribeUserDoc();
-        this._unsubscribePagesCollection();
-        this._unsubscribeSyncUserState();
-        this._unsubscribeSyncPagesState();
-    }
+type FirebaseState = {
+    userDoc: any,
+    readonly pageDocs: Record<string, any>,
+    readonly user: User | null,
+    readonly isLoading: boolean,
+    isPublishing: boolean,
+    readonly destroy: () => void
+    readonly subscribeToPageDocs: (fn: Function) => () => void
+    readonly subscribeToUserDoc: (fn: Function) => () => void
 }
 
-export const firebaseState = new FirebaseState();
+function createFirebaseState(): FirebaseState {
+    let user: User | null = $state(null)
+    let isLoading = $state(true)
+    let isPublishing = $state(false)
+    let userDoc: any = {}
+    let pageDocs: Record<string, any> = new Proxy({}, {
+        set(target: any, prop: any, value: any) {
+            if (value === target[prop]) return true
+            target[prop] = value
+            notifyPageDocObservers(prop)
+            return true
+        },
+        deleteProperty(target: any, prop: any) {
+            if (prop in target) {
+                delete target[prop]
+                notifyPageDocObservers(prop)
+                return true
+            }
+            return false
+        }
+    })
+    let userDocObservers: Function[] = []
+    let pageDocObservers: Function[] = []
+
+    let unsubscribeUserDoc = () => { }
+    let unsubscribePagesCollection = () => { }
+    let unsubscribeSyncUserState = () => { }
+    let unsubscribeSyncPagesState = () => { }
+    let unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
+        user = currentUser
+        isLoading = false
+
+        if (user) {
+            console.warn("Subscribing to user.");
+            unsubscribeUserDoc = observeUserDoc()
+            unsubscribePagesCollection = observePagesCollection()
+            unsubscribeSyncUserState = syncUserAndFirebaseState()
+            unsubscribeSyncPagesState = syncPagesAndFirebaseState()
+        } else {
+            console.warn("Unsubscribing from user.");
+            unsubscribeUserDoc();
+            unsubscribePagesCollection();
+            unsubscribeSyncUserState();
+            unsubscribeSyncPagesState();
+        }
+    })
+
+    const subscribeToUserDoc = function (fn: Function) {
+        userDocObservers.push(fn)
+        return () => {
+            userDocObservers = userDocObservers.filter(observer => observer !== fn)
+        }
+    }
+
+    const notifyUserDocObservers = function () {
+        userDocObservers.forEach(callback => callback())
+    }
+
+    const subscribeToPageDocs = function (fn: Function) {
+        pageDocObservers.push(fn)
+        return () => {
+            pageDocObservers = pageDocObservers.filter(observer => observer !== fn)
+        }
+    }
+
+    const notifyPageDocObservers = function (id: string) {
+        pageDocObservers.forEach(callback => callback(id))
+    }
+
+    const destroy = function () {
+        console.warn("Destroying FirebaseState.");
+        unsubscribeAuth();
+        unsubscribeUserDoc();
+        unsubscribePagesCollection();
+        unsubscribeSyncUserState();
+        unsubscribeSyncPagesState();
+    }
+
+    return {
+        get user() { return user },
+        get isLoading() { return isLoading },
+        get isPublishing() { return isPublishing },
+        set isPublishing(value) { isPublishing = value },
+        get destroy() { return destroy },
+        get userDoc() { return userDoc },
+        set userDoc(value) { userDoc = value; notifyUserDocObservers() },
+        get pageDocs() { return pageDocs },
+        get subscribeToUserDoc() { return subscribeToUserDoc },
+        get subscribeToPageDocs() { return subscribeToPageDocs }
+    }
+
+}
+
+export const firebaseState = createFirebaseState();

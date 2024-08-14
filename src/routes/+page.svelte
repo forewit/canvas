@@ -5,12 +5,11 @@
   import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
 
   function addPage() {
-    pagesState.createPage();    
+    pagesState.newPage();
   }
 
   function changeSettings() {
-    userState.spellcheck = !userState.spellcheck;
-    userState.triggerUpdate();
+    userState.spellcheck = !userState.spellcheck
   }
 
   function clickPage(id: string) {
@@ -20,7 +19,6 @@
   function rightClickPage(e:MouseEvent, id: string) {
     e.preventDefault();
     delete pagesState.pages[id];
-    //pagesState.notifyPagesObservers(id);
   }
 </script>
 
@@ -32,6 +30,9 @@
   {#each Object.entries(pagesState.pages) as [id, page] (page)}
     <button oncontextmenu={(e) => rightClickPage(e, id)} onclick={() => clickPage(id)} class="ui-card">📄{id.slice(0, 4)}: {page.title}</button>
   {/each}
+
+  <p>Theme: {userState.themeName}</p>
+  <p>Spellcheck: {userState.spellcheck ? "On" : "Off"}</p>
 </div>
 
 <style>

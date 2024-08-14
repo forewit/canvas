@@ -44,8 +44,10 @@ function createFirebaseState(): FirebaseState {
     let unsubscribeSyncPagesState = () => { }
     let unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
         user = currentUser
-        isLoading = false
-
+        const unsub = subscribeToUserDoc(() => {
+            isLoading = false
+            unsub();
+        })
         if (user) {
             console.warn("Subscribing to user.");
             unsubscribeUserDoc = observeUserDoc()

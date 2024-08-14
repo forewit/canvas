@@ -1,0 +1,31 @@
+<script lang="ts">
+  import type { Snippet } from "svelte";
+  import { pagesState } from "$lib/State/pagesState.svelte";
+  import { getAppState } from "$lib/State/appState.svelte";
+  import ProgressBar from "$lib/UI/ProgressBar.svelte";
+  import { goto } from "$app/navigation";
+  import { base } from "$app/paths";
+
+  let { children, data }: { children: Snippet, data: any } = $props();
+
+  const id = data.id
+  const appState = getAppState();
+
+
+  function redirect() {
+    if (appState.authRedirect === `${base}/${id}/`) appState.authRedirect = "/";
+    goto(appState.authRedirect);
+  }
+
+  $effect(() => {
+    if (!pagesState.pages[id]) {
+      redirect();
+    }
+  });
+</script>
+
+{#if !pagesState.pages[id]}
+  <ProgressBar />
+{:else}
+    {@render children() }
+{/if}

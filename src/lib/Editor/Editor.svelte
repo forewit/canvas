@@ -7,9 +7,10 @@
   import { saveContent, loadContent, type EditorContent } from "./utils/editorContent";
   import { detectAndformatLinks } from "./utils/linkFormatting";
   import { bindKeyboardShortcuts } from "./utils/keyboardShortcuts";
-  import { getContext, onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
-  let data: EditorContent = $state(getContext("editor"));
+
+  const { data = $bindable() }: { data: EditorContent } = $props();
   let quill: Quill | undefined = $state();
   let quillElm: HTMLElement;
 
@@ -64,11 +65,12 @@
 </script>
 
 <div class="quill-editor-container">
-  <div class="quill-editor"></div>
+  <div class="quill-editor" bind:this={quillElm}></div>
 </div>
 
 <style>
   .quill-editor-container {
     background-color: var(--bg);
+    height: 100%;
   }
 </style>

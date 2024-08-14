@@ -1,48 +1,58 @@
 <script lang="ts">
-  import { logout } from "$lib/Firebase/Auth/authUtils";
-  import { userState } from "$lib/State/userState.svelte";
   import { pagesState } from "$lib/State/pagesState.svelte";
-  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
+  import { goto } from "$app/navigation";
 
-  function addPage() {
-    pagesState.newPage();
-  }
 
-  function changeSettings() {
-    userState.spellcheck = !userState.spellcheck
-  }
-
-  function clickPage(id: string) {
-      pagesState.pages[id].title = "Title" + Math.random().toString().slice(2, 4);
-  }
-
-  function rightClickPage(e:MouseEvent, id: string) {
-    e.preventDefault();
-    delete pagesState.pages[id];
-  }
 </script>
 
-<div class="container">
-  <button class="ui-card" onclick={addPage}>Add Page</button>
-  <button class="ui-card" onclick={changeSettings}>Change Settings</button>
-  <button class="ui-card" onclick={logout}>Logout</button>
+<button class="new-page-button" onclick={()=>{pagesState.newPage()}}>New Page</button>
 
-  {#each Object.entries(pagesState.pages) as [id, page] (page)}
-    <button oncontextmenu={(e) => rightClickPage(e, id)} onclick={() => clickPage(id)} class="ui-card">📄{id.slice(0, 4)}: {page.title}</button>
+<div class="pages">
+  {#each Object.entries(pagesState.pages) as [id, page]}
+  <div class="page">
+    <button class="goto-page-button" onclick={() => goto("/" + id)}>
+      <p>{page.title}</p>
+    </button>
+    <button class="close-page-button" onclick={() => delete pagesState.pages[id]}>❌</button>
+  </div>
+  
   {/each}
-
-  <p>Theme: {userState.themeName}</p>
-  <p>Spellcheck: {userState.spellcheck ? "On" : "Off"}</p>
 </div>
 
+
+
 <style>
-  .container {
-    height: 100%;
-    background-color: var(--bg);
+  button {
+    background-color: var(--bg-alt);
+    color: var(--text);
+    padding: var(--m);
+  }
+  button:active {
+    background-color: var(--main);
+    color: var(--bg);
+  }
+
+
+  .pages {
+    border: 3px solid darkred;
+    width: min-content;
+    display: grid;
+    grid-auto-flow: row;
+  }
+
+  .new-page-button {
+    border: 3px solid darkgreen;
+  }
+
+  .page {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+  }
+
+  .close-page-button {
+    border: 3px solid darkgoldenrod;
+  }
+
+  .goto-page-button {
+    border: 3px solid darkblue;
   }
 </style>

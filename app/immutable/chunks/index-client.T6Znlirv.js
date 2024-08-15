@@ -1,0 +1,1 @@
+import{c as e,l as o,u as c,e as u}from"./runtime.CZKCI6PF.js";function a(n){e===null&&o(),e.l!==null?l(e).m.push(n):c(()=>{const t=u(n);if(typeof t=="function")return t})}function r(n){e===null&&o(),a(()=>()=>u(n))}function l(n){var t=n.l;return t.u??(t.u={a:[],b:[],m:[]})}export{a,r as o};

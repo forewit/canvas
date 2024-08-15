@@ -7,7 +7,7 @@
   const appState = getAppState();
 
   function redirect() {
-    if (appState.authRedirect === `${base}/login/`) appState.authRedirect = "/";
+    if (appState.authRedirect === base+"/login/") appState.authRedirect = base+"/";
     goto(appState.authRedirect);
   }
 </script>

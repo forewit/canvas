@@ -1,7 +1,7 @@
 import { auth } from "$lib/Firebase/firebase.client";
 import type { User } from "firebase/auth";
 import { observePagesCollection, observeUserDoc } from "./Firestore/observeFirestoreDocs.svelte";
-import { syncUserAndFirebaseState, syncPagesAndFirebaseState } from "./Firestore/syncStatesWithFirestore.svelte";
+import { syncUserStateAndFirestore, syncPagesStateAndFirestore } from "./Firestore/syncStatesWithFirestore.svelte";
 
 type FirebaseState = {
     userDoc: any,
@@ -52,8 +52,8 @@ function createFirebaseState(): FirebaseState {
             console.warn("Subscribing to user.");
             unsubscribeUserDoc = observeUserDoc()
             unsubscribePagesCollection = observePagesCollection()
-            unsubscribeSyncUserState = syncUserAndFirebaseState()
-            unsubscribeSyncPagesState = syncPagesAndFirebaseState()
+            unsubscribeSyncUserState = syncUserStateAndFirestore()
+            unsubscribeSyncPagesState = syncPagesStateAndFirestore()
         } else {
             console.warn("Unsubscribing from user.");
             unsubscribeUserDoc();

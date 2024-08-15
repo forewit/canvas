@@ -1,13 +1,13 @@
 import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
 import { userState } from "../../State/userState.svelte";
 import { pagesState } from "$lib/State/pagesState.svelte";
-import { debounced_publishUserSettingsToFirestore, debounced_publishPageToFirestore } from "./publishToFirestoreDocs.svelte";
+import { publishPageToFirestore, publishUserSettingsToFirestore } from "./publishToFirestoreDocs.svelte";
 
-export const syncPagesAndFirebaseState = function () {
+export const syncPagesStateAndFirestore = function () {
     const unsubscribeFromPagesState = pagesState.subscribe((id: string) => {
         if (!pagesState.pages[id] || !firebaseState.pageDocs[id] || pagesState.pages[id].lastUpdated > firebaseState.pageDocs[id].lastUpdated) {
             firebaseState.isPublishing = true;
-            debounced_publishPageToFirestore(id);
+            publishPageToFirestore(id);
         }
     })
 
@@ -36,7 +36,7 @@ export const syncPagesAndFirebaseState = function () {
         }
         else {
             firebaseState.isPublishing = true;
-            debounced_publishPageToFirestore(id);
+            publishPageToFirestore(id);
         }
     })
 
@@ -46,11 +46,11 @@ export const syncPagesAndFirebaseState = function () {
     }
 }
 
-export const syncUserAndFirebaseState = function () {
+export const syncUserStateAndFirestore = function () {
     const unsubscribeUserState = userState.subscribe(() => {
         if (userState.lastUpdated > firebaseState.userDoc.lastUpdated) {
             firebaseState.isPublishing = true;
-            debounced_publishUserSettingsToFirestore();
+            publishUserSettingsToFirestore();
         }
     })
 
@@ -60,12 +60,12 @@ export const syncUserAndFirebaseState = function () {
             return
         } else if (firebaseState.userDoc.lastUpdated > userState.lastUpdated) {
             console.log("userState updated.")
-            userState.untrack(()=>{
+            userState.untrack(() => {
                 Object.assign(userState, firebaseState.userDoc);
             })
         } else {
             firebaseState.isPublishing = true;
-            debounced_publishUserSettingsToFirestore();
+            publishUserSettingsToFirestore();
         }
     })
 

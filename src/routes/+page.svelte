@@ -1,28 +1,65 @@
 <script lang="ts">
   import { pagesState } from "$lib/State/pagesState.svelte";
+  import { logout } from "$lib/Firebase/Auth/authUtils";
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
-
-
+  import { userState } from "$lib/State/userState.svelte";
 </script>
 
-<button class="new-page-button" onclick={()=>{pagesState.newPage()}}>New Page</button>
+<header>
+  <button
+    class="new-page-button"
+    onclick={() => {
+      pagesState.newPage();
+    }}>New Page</button
+  >
 
-<div class="pages">
+  <button
+    class="logout-button"
+    onclick={() => {
+      logout();
+    }}>Logout</button
+  >
+
+  <button
+    class="spellcheck-button"
+    onclick={() => {
+      userState.spellcheck = !userState.spellcheck;
+    }}>Change Spellcheck</button
+  >
+</header>
+
+<main>
   {#each Object.entries(pagesState.pages) as [id, page]}
-  <div class="page">
-    <button class="goto-page-button" onclick={() => goto(base + "/" + id + "/")}>
-      <p>{page.title}</p>
-    </button>
-    <button class="close-page-button" onclick={() => delete pagesState.pages[id]}>❌</button>
-  </div>
-  
+    <div class="page">
+      <input type="text" bind:value={page.title}>
+      <button
+        class="goto-page-button"
+        onclick={() => goto(base + "/" + id + "/")}
+      >
+        Go
+      </button>
+      <button
+        class="close-page-button"
+        onclick={() => delete pagesState.pages[id]}>❌</button
+      >
+    </div>
   {/each}
-</div>
-
-
+</main>
 
 <style>
+  header {
+    display: flex;
+    gap: var(--s);
+    border: 3px solid darkcyan;
+  }
+  main {
+    border: 3px solid darkred;
+    width: min-content;
+    display: grid;
+    grid-auto-flow: row;
+  }
+
   button {
     background-color: var(--bg-alt);
     color: var(--text);
@@ -33,27 +70,8 @@
     color: var(--bg);
   }
 
-
-  .pages {
-    border: 3px solid darkred;
-    width: min-content;
-    display: grid;
-    grid-auto-flow: row;
-  }
-
-  .new-page-button {
-    border: 3px solid darkgreen;
-  }
-
   .page {
     display: flex;
-  }
-
-  .close-page-button {
-    border: 3px solid darkgoldenrod;
-  }
-
-  .goto-page-button {
-    border: 3px solid darkblue;
+    border: 3px solid darksalmon;
   }
 </style>

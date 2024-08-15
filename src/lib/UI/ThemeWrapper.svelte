@@ -1,9 +1,9 @@
 <script lang="ts">
   import "./styles/normalize.css";
-  import "./styles/reset.css"
+  import "./styles/reset.css";
   import "./styles/UIVariables.css";
   import "./styles/UIGlobal.css";
-  import "./styles/UIClasses.css"
+  import "./styles/UIClasses.css";
   import { themes } from "./utils/themes";
   import { updateSafeAreas } from "./utils/updateSafeAreas";
   import { userState } from "$lib/State/userState.svelte";
@@ -28,12 +28,15 @@
 
   $effect(() => {
     screen.orientation.addEventListener("change", updateSafeAreas);
-    return () => screen.orientation.removeEventListener("change", updateSafeAreas);
+    return () =>
+      screen.orientation.removeEventListener("change", updateSafeAreas);
   });
 </script>
 
 <svelte:head>
-  <meta name="theme-color" content="var(--bg)" />
+  {#if theme}
+    <meta name="theme-color" content={theme.bg} />
+  {/if}
 </svelte:head>
 
 {@render children()}

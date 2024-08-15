@@ -58,7 +58,7 @@ function createPagesState(): PagesState {
     }
 
     const newPage = function (data?: Page): string {
-        const id = crypto.randomUUID();
+        const id = crypto.randomUUID().slice(0, 8);
         const page = data || {
             lastUpdated: Date.now(),
             title: "Untitled",

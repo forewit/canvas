@@ -5,10 +5,22 @@ import { db } from "../firebase.client";
 import { doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { debounce } from "$lib/Utils/debouncing";
 
+const DEBOUNCE_DELAY = 1000;
 
-export const debounced_publishPageToFirestore = debounce(publishPageToFirestore, 2000);
 
-async function publishPageToFirestore(id: string) {
+let pendingPublishes: Record<string, Function> = {};
+export const publishPageToFirestore = (id: string) => {
+    if (pendingPublishes[id]) return
+
+    pendingPublishes[id] = debounce(() => {
+        delete pendingPublishes[id];
+        _publishPageToFirestore(id);
+    }, DEBOUNCE_DELAY);
+
+    pendingPublishes[id]();
+}
+
+async function _publishPageToFirestore(id: string) {
     const user = firebaseState.user;
 
     if (!user) {
@@ -19,6 +31,7 @@ async function publishPageToFirestore(id: string) {
     if (!pagesState.pages[id]) {
         console.warn("deleting page from firestore: ", id.slice(0, 4));
         await deleteDoc(doc(db, "users", user.uid, "pages", id));
+        firebaseState.isPublishing = false;
         return
     }
 
@@ -26,7 +39,7 @@ async function publishPageToFirestore(id: string) {
     const pageRef = doc(db, "users", user.uid, "pages", id);
 
     try {
-        console.log(`Publishing page to firestore: ${id.slice(0,4)}...`);
+        console.log(`Publishing page to firestore: ${id.slice(0, 4)}...`);
         if (firebaseState.pageDocs[id]) {
             await updateDoc(pageRef, pagesState.pages[id]);
         } else {
@@ -39,10 +52,9 @@ async function publishPageToFirestore(id: string) {
     }
 }
 
+export const publishUserSettingsToFirestore = debounce(_publishUserSettingsToFirestore, DEBOUNCE_DELAY);
 
-export const debounced_publishUserSettingsToFirestore = debounce(publishUserSettingsToFirestore, 2000);
-
-async function publishUserSettingsToFirestore() {
+async function _publishUserSettingsToFirestore() {
     const user = firebaseState.user;
 
     if (!user) {

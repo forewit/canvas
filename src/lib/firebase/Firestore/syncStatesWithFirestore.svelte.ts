@@ -1,12 +1,13 @@
 import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
 import { userState } from "../../State/userState.svelte";
 import { pagesState } from "$lib/State/pagesState.svelte";
-import { publishUserSettingsToFirestore, publishPageToFirestore } from "./publishToFirestoreDocs.svelte";
+import { debounced_publishUserSettingsToFirestore, debounced_publishPageToFirestore } from "./publishToFirestoreDocs.svelte";
 
 export const syncPagesAndFirebaseState = function () {
     const unsubscribeFromPagesState = pagesState.subscribe((id: string) => {
         if (!pagesState.pages[id] || !firebaseState.pageDocs[id] || pagesState.pages[id].lastUpdated > firebaseState.pageDocs[id].lastUpdated) {
-            publishPageToFirestore(id);
+            firebaseState.isPublishing = true;
+            debounced_publishPageToFirestore(id);
         }
     })
 
@@ -34,7 +35,8 @@ export const syncPagesAndFirebaseState = function () {
             //pagesState.createPage({ id: id, page: firebaseState.pageDocs[id] }, false);
         }
         else {
-            publishPageToFirestore(id);
+            firebaseState.isPublishing = true;
+            debounced_publishPageToFirestore(id);
         }
     })
 
@@ -47,7 +49,8 @@ export const syncPagesAndFirebaseState = function () {
 export const syncUserAndFirebaseState = function () {
     const unsubscribeUserState = userState.subscribe(() => {
         if (userState.lastUpdated > firebaseState.userDoc.lastUpdated) {
-            publishUserSettingsToFirestore();
+            firebaseState.isPublishing = true;
+            debounced_publishUserSettingsToFirestore();
         }
     })
 
@@ -61,7 +64,8 @@ export const syncUserAndFirebaseState = function () {
                 Object.assign(userState, firebaseState.userDoc);
             })
         } else {
-            publishUserSettingsToFirestore();
+            firebaseState.isPublishing = true;
+            debounced_publishUserSettingsToFirestore();
         }
     })
 

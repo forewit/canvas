@@ -1,6 +1,7 @@
 <script lang="ts">
   import { pagesState } from "$lib/State/pagesState.svelte.js";
   import Editor from "$lib/Editor/Editor.svelte";
+  import PublishingStatus from "$lib/Firebase/PublishingStatus.svelte";
   import { type EditorContent } from "$lib/Editor/utils/editorContent.js";
 
   const { data } = $props();
@@ -20,12 +21,15 @@
 <div class="page-container">
   <header>
     <button class="back-button" onclick={() => history.back()}>Back</button>
-    <h1>{page.title}</h1>
+    <input bind:value={page.title}/>
   </header>
 
   <section>
     <Editor bind:data={editorContent} />
   </section>
+</div>
+<div class="publishing-status">
+    <PublishingStatus />
 </div>
 
 <style>
@@ -49,5 +53,12 @@
   button:active {
     background-color: var(--main);
     color: var(--bg);
+  }
+  .publishing-status {
+    pointer-events: none;
+    position: absolute;
+    bottom: var(--m);
+    right: calc(var(--m) + var(--safe-area-right));
+    z-index: 1;
   }
 </style>

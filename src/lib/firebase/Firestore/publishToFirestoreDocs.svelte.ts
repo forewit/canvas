@@ -3,8 +3,12 @@ import { firebaseState } from "../firebaseState.svelte";
 import { pagesState } from "$lib/State/pagesState.svelte";
 import { db } from "../firebase.client";
 import { doc, updateDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { debounce } from "$lib/Utils/debouncing";
 
-export async function publishPageToFirestore(id: string) {
+
+export const debounced_publishPageToFirestore = debounce(publishPageToFirestore, 2000);
+
+async function publishPageToFirestore(id: string) {
     const user = firebaseState.user;
 
     if (!user) {
@@ -35,7 +39,10 @@ export async function publishPageToFirestore(id: string) {
     }
 }
 
-export async function publishUserSettingsToFirestore() {
+
+export const debounced_publishUserSettingsToFirestore = debounce(publishUserSettingsToFirestore, 2000);
+
+async function publishUserSettingsToFirestore() {
     const user = firebaseState.user;
 
     if (!user) {

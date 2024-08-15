@@ -13,7 +13,7 @@
 
 
   function redirect() {
-    if (appState.authRedirect === `${base}/${id}/`) appState.authRedirect = "/";
+    if (appState.authRedirect === `${base}/${id}/`) appState.authRedirect = `${base}/`;
     goto(appState.authRedirect);
   }
 

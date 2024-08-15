@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="/canvas/images/favicon_512.png" />
+    <link rel="manifest" href="/canvas/manifest.json" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=0, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+    />
+    
+		<link rel="modulepreload" href="/canvas/app/immutable/entry/start.BxZ7nNi1.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/entry.B52UK3IH.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/runtime.atawwWdS.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/entry/app.BaNwqVEg.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/preload-helper.BelJvYX6.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/render.CpWSVxfm.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/disclose-version.Y_F0_rko.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/events.CH0IXMTi.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/svelte-head.SZIjQyGK.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/if.B_SVmx97.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/proxy.Clc3I-nX.js">
+		<link rel="modulepreload" href="/canvas/app/immutable/chunks/index-client.D2Fp2Kcj.js">
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">
+			<script>
+				{
+					__sveltekit_1bym52 = {
+						base: "/canvas",
+						assets: "/canvas"
+					};
+
+					const element = document.currentScript.parentElement;
+
+					Promise.all([
+						import("/canvas/app/immutable/entry/start.BxZ7nNi1.js"),
+						import("/canvas/app/immutable/entry/app.BaNwqVEg.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element);
+					});
+
+					if ('serviceWorker' in navigator) {
+						addEventListener('load', function () {
+							navigator.serviceWorker.register('/canvas/service-worker.js');
+						});
+					}
+				}
+			</script>
+		</div>
+  </body>
+</html>

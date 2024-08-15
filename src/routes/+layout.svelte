@@ -28,14 +28,14 @@
 </script>
 
 <ThemeWrapper>
-  {#if firebaseState.isLoading}
+  <!-- {#if firebaseState.isLoading}
     <ProgressBar />
-  {:else}
+  {:else} -->
     <div class="publishing-status">
       <PublishingStatus />
     </div>
     {@render children() }
-  {/if}
+  <!-- {/if} -->
 </ThemeWrapper>
 
 <style>

@@ -44,10 +44,10 @@ function createFirebaseState(): FirebaseState {
     let unsubscribeSyncPagesState = () => { }
     let unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
         user = currentUser
-        const unsub = subscribeToUserDoc(() => {
-            isLoading = false
-            unsub();
-        })
+        // const unsub = subscribeToUserDoc(() => {
+        //     isLoading = false
+        //     unsub();
+        // })
         if (user) {
             console.warn("Subscribing to user.");
             unsubscribeUserDoc = observeUserDoc()
@@ -101,7 +101,7 @@ function createFirebaseState(): FirebaseState {
         set isPublishing(value) { isPublishing = value },
         get destroy() { return destroy },
         get userDoc() { return userDoc },
-        set userDoc(value) { userDoc = value; notifyUserDocObservers() },
+        set userDoc(value) { userDoc = value; notifyUserDocObservers(); isLoading = false },
         get pageDocs() { return pageDocs },
         get subscribeToUserDoc() { return subscribeToUserDoc },
         get subscribeToPageDocs() { return subscribeToPageDocs }

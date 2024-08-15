@@ -24,7 +24,6 @@ export const syncPagesStateAndFirestore = function () {
         else if (!pagesState.pages[id]) {
             console.log(`page ${id.slice(0, 4)} added from firestore.`)
             pagesState.pages[id] = firebaseState.pageDocs[id];
-            //pagesState.createPage({ id: id, page: firebaseState.pageDocs[id] }, false);
         }
         else if (firebaseState.pageDocs[id].lastUpdated === pagesState.pages[id].lastUpdated) {
             console.log(`page ${id.slice(0, 4)} is synced.`)
@@ -32,7 +31,6 @@ export const syncPagesStateAndFirestore = function () {
         else if (firebaseState.pageDocs[id].lastUpdated > pagesState.pages[id].lastUpdated) {
             console.log(`page ${id.slice(0, 4)} updated from firestore.`)
             pagesState.pages[id] = firebaseState.pageDocs[id];
-            //pagesState.createPage({ id: id, page: firebaseState.pageDocs[id] }, false);
         }
         else {
             firebaseState.isPublishing = true;

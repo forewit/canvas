@@ -1,10 +1,11 @@
+import { appState } from "./appState.svelte";
+import { userState } from "./userState.svelte";
+
 export type Page = {
     lastUpdated: number,
     title: string,
     content: string
 }
-
-
 
 type PagesState = {
     readonly pages: Record<string, Page>,
@@ -20,12 +21,14 @@ function createPagesState(): PagesState {
         set(target: Record<string, Page>, prop: string, value: Page) {
             if (value === target[prop]) return true
             target[prop] = setupPage(prop, value);
+            userState.paths[prop] = appState.currentPath;
             notifyObservers(prop);
             return true
         },
         deleteProperty(target: any, prop: any) {
             if (prop in target) {
                 delete target[prop];
+                delete userState.paths[prop];
                 notifyObservers(prop);
                 return true;
             }

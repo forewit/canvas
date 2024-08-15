@@ -72,7 +72,8 @@ async function _publishUserSettingsToFirestore() {
             {
                 lastUpdated: userState.lastUpdated,
                 themeName: userState.themeName,
-                spellcheck: userState.spellcheck
+                spellcheck: userState.spellcheck,
+                paths: userState.paths,
             }
         );
 

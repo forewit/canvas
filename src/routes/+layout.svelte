@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, type Snippet } from "svelte";
   import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
-  import { setAppState } from "$lib/State/appState.svelte";
+  import { appState } from "$lib/State/appState.svelte";
   import { goto } from "$app/navigation";
   import ThemeWrapper from "$lib/UI/ThemeWrapper.svelte";
   import ProgressBar from "$lib/UI/ProgressBar.svelte";
@@ -10,7 +10,6 @@
 
   let { children }: { children: Snippet } = $props();
 
-  const appState = setAppState();
 
   $effect(() => {
     appState.authRedirect = window.location.pathname;
@@ -28,14 +27,14 @@
 </script>
 
 <ThemeWrapper>
-  <!-- {#if firebaseState.isLoading}
+  {#if firebaseState.isLoading}
     <ProgressBar />
-  {:else} -->
+  {:else}
     <div class="publishing-status">
       <PublishingStatus />
     </div>
     {@render children() }
-  <!-- {/if} -->
+  {/if}
 </ThemeWrapper>
 
 <style>

@@ -1,10 +1,8 @@
 <script>
-  import { getAppState } from "$lib/State/appState.svelte";
+  import { appState } from "$lib/State/appState.svelte";
   import { base } from "$app/paths";
   import { goto } from "$app/navigation";
   import AuthForm from "$lib/Firebase/Auth/AuthForm.svelte";
-
-  const appState = getAppState();
 
   function redirect() {
     if (appState.authRedirect === base+"/login/") appState.authRedirect = base+"/";

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { pagesState } from "$lib/State/pagesState.svelte";
   import { goto } from "$app/navigation";
+  import { base } from "$app/paths";
 
 
 </script>
@@ -10,7 +11,7 @@
 <div class="pages">
   {#each Object.entries(pagesState.pages) as [id, page]}
   <div class="page">
-    <button class="goto-page-button" onclick={() => goto("/" + id)}>
+    <button class="goto-page-button" onclick={() => goto(base + "/" + id + "/")}>
       <p>{page.title}</p>
     </button>
     <button class="close-page-button" onclick={() => delete pagesState.pages[id]}>❌</button>

@@ -31,7 +31,7 @@
   // update user settings reactively
   $effect(() => {
     if (quill) {
-      quill.root.setAttribute("spellcheck", userState.spellcheck.toString());
+      quill.root.setAttribute("spellcheck", userState.get().spellcheck.toString());
     }
   });
 

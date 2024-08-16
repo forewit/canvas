@@ -1,5 +1,4 @@
-import { appState } from "./appState.svelte";
-import { userState } from "./userState.svelte";
+import { observable } from "$lib/Utils/observable";
 
 export type Page = {
     lastUpdated: number,
@@ -7,36 +6,35 @@ export type Page = {
     content: string
 }
 
-type PagesState = {
-    readonly pages: Record<string, Page>,
-    readonly subscribe: (fn: Function) => () => void,
-    readonly newPage: (data?: Page) => string,
-}
-
-function createPagesState(): PagesState {
-    let observers: Function[] = [];
+function createPagesState() {
     let pages: Record<string, Page> = $state({});
 
-    pages = new Proxy(pages, {
-        set(target: Record<string, Page>, prop: string, value: Page) {
-            if (value === target[prop]) return true
-            target[prop] = setupPage(prop, value);
-            userState.paths[prop] = appState.currentPath;
-            notifyObservers(prop);
-            return true
-        },
-        deleteProperty(target: any, prop: any) {
-            if (prop in target) {
-                delete target[prop];
-                delete userState.paths[prop];
-                notifyObservers(prop);
-                return true;
-            }
-            return false
-        }
-    })
 
-    const setupPage = function (id: string, page: Page): Page {
+    // const setupPage = function (id: string, page: Page) {
+    //     let lastUpdated = $state(page.lastUpdated);
+    //     let title = $state(page.title);
+    //     let content = $state(page.content);
+
+    //     return {
+    //         get lastUpdated() { return lastUpdated },
+    //         get title() { return title },
+    //         set title(value) {
+    //             if (value === title) return;
+    //             title = value;
+    //             lastUpdated = Date.now();
+    //             observer.notify(id);
+    //         },
+    //         get content() { return content },
+    //         set content(value) {
+    //             if (value === content) return
+    //             content = value
+    //             lastUpdated = Date.now()
+    //             observer.notify(id)
+    //         }
+    //     }
+    // }
+
+    const setupPage = function (id: string, page: Page) {
         let lastUpdated = $state(page.lastUpdated);
         let title = $state(page.title);
         let content = $state(page.content);
@@ -48,45 +46,23 @@ function createPagesState(): PagesState {
                 if (value === title) return;
                 title = value;
                 lastUpdated = Date.now();
-                notifyObservers(id);
+                observer.notify(id);
             },
             get content() { return content },
             set content(value) {
                 if (value === content) return
                 content = value
                 lastUpdated = Date.now()
-                notifyObservers(id)
+                observer.notify(id)
             }
         }
     }
 
-    const newPage = function (data?: Page): string {
-        const id = crypto.randomUUID().slice(0, 8);
-        const page = data || {
-            lastUpdated: Date.now(),
-            title: "Untitled",
-            content: ""
-        }
-        pages[id] = page
-        return id;
-    }
-
-    const subscribe = function (fn: Function) {
-        observers.push(fn);
-        return () => {
-            observers = observers.filter(observer => observer !== fn);
-        }
-    }
-
-    const notifyObservers = function (id: string) {
-        observers.forEach(fn => fn(id));
-    }
-
-    return {
-        get pages() { return pages },
-        get subscribe() { return subscribe },
-        get newPage() { return newPage },
-    }
+    const observer = observable(pages, ()=>{}, (prop, value)=>{
+        return setupPage(prop, value);
+    });
+    return observer
 }
+
 
 export const pagesState = createPagesState();

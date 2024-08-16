@@ -16,13 +16,13 @@
   }
 
   $effect(() => {
-    if (!pagesState.pages[id]) {
+    if (!pagesState.get()[id]) {
       redirect();
     }
   });
 </script>
 
-{#if !pagesState.pages[id]}
+{#if !pagesState.get()[id]}
   <ProgressBar />
 {:else}
     {@render children() }

@@ -6,7 +6,7 @@
   const { data } = $props();
   const id = data.id;
 
-  const page = pagesState.pages[id];
+  const page = pagesState.get()[id];
 
   let editorContent: EditorContent = $state({
     ops: [],

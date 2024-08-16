@@ -28,7 +28,7 @@ async function _publishPageToFirestore(id: string) {
         return
     }
 
-    if (!pagesState.pages[id]) {
+    if (!pagesState.get()[id]) {
         console.warn("deleting page from firestore: ", id.slice(0, 4));
         await deleteDoc(doc(db, "users", user.uid, "pages", id));
         firebaseState.isPublishing = false;
@@ -40,10 +40,15 @@ async function _publishPageToFirestore(id: string) {
 
     try {
         console.log(`Publishing page to firestore: ${id.slice(0, 4)}...`);
+        const pageData = {
+            lastUpdated: pagesState.get()[id].lastUpdated,
+            title: pagesState.get()[id].title,
+            content: pagesState.get()[id].content
+        }
         if (firebaseState.pageDocs[id]) {
-            await updateDoc(pageRef, pagesState.pages[id]);
+            await updateDoc(pageRef, pageData);
         } else {
-            await setDoc(pageRef, pagesState.pages[id]);
+            await setDoc(pageRef, pageData);
         }
     } catch (err) {
         console.error("Error while publishing page to firestore", err);
@@ -70,10 +75,10 @@ async function _publishUserSettingsToFirestore() {
         await updateDoc(
             userRef,
             {
-                lastUpdated: userState.lastUpdated,
-                themeName: userState.themeName,
-                spellcheck: userState.spellcheck,
-                paths: userState.paths,
+                lastUpdated: userState.get().lastUpdated,
+                themeName: userState.get().themeName,
+                spellcheck: userState.get().spellcheck,
+                root: userState.get().root,
             }
         );
 

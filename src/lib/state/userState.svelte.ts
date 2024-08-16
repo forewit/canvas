@@ -22,8 +22,9 @@ function createUserState() {
     set spellcheck(value) { spellcheck = value },
     get root() { return root },
     set root(value) { root = value },
-  },
-    () => { lastUpdated = Date.now() }
+  }, {
+    beforeUpdate: () => { lastUpdated = Date.now() }
+  }
   )
 }
 export const userState = createUserState();

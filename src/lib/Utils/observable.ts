@@ -5,7 +5,9 @@ export type Observer = {
 }
 
 
-export const observable = <T extends object>(source: T, beforeUpdate: (target: any, prop: any, value?: any) => void = () => { }, intercept: (prop: keyof T, value: any) => any = (p, v) => v) => {
+export const observable = <T extends object>(source: T, options?: { beforeUpdate?: (target: any, prop: any, value?: any) => void, intercept?: (prop: keyof T, value: any) => any }) => {
+    const { beforeUpdate, intercept } = {beforeUpdate: () => {}, intercept: (prop: any, value:any) => value, ...options }; 
+
     let observers: Function[] = [];
     let untracked = false;
     const notify = (prop: any, value?: any) => {

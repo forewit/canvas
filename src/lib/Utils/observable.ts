@@ -1,4 +1,11 @@
-export const observable = <T extends object>(source: T, options?: { beforeUpdate?: (target: T, prop: keyof T, value?: any) => void, intercept?: (prop: keyof T, value: any) => any }) => {
+export type Observable<T extends object> = {
+    subscribe: (fn: (prop: any, value: any) => void) => () => void
+    untrack: (fn: Function) => void
+    notify: (prop: any, value?: any) => void
+    get: () => T
+}
+
+export const observable = <T extends object>(source: T, options?: { beforeUpdate?: (target: T, prop: keyof T, value?: any) => void, intercept?: (prop: keyof T, value: any) => any }): Observable<T> => {
     const { beforeUpdate, intercept } = {beforeUpdate: () => {}, intercept: (prop: keyof T, value:any) => value, ...options }; 
 
     let observers: Function[] = [];

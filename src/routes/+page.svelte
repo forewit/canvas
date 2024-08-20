@@ -6,11 +6,10 @@
   import { userState } from "$lib/State/userState.svelte";
   import { appState } from "$lib/State/appState.svelte";
   import type { Page } from "$lib/State/pagesState.svelte";
-  import { pathState } from "$lib/State/pathState.svelte";
 
   let currentPages = $derived.by(() => {
     let pages: Record<string, Page> = {};
-    appState.path.pageIDs.forEach((id) => {
+    appState.directory.pageIDs.forEach((id) => {
       pages[id] = pagesState.get()[id];
     });
     return pages;
@@ -40,19 +39,22 @@
         title: "New Page",
         content: "",
         lastUpdated: Date.now(),
-      }
+      };
       pagesState.get()[id] = page;
-      appState.path.pageIDs.push(id);
+      appState.directory.pageIDs.push(id);
     }}>+📄</button
   >
 
-  <button class="new-path-button" onclick={() => {}}>+📂</button>
-
   <button
-    class="test-button"
+    class="new-path-button"
     onclick={() => {
-      pathState.test = !pathState.test;
-    }}>Test</button
+      appState.directory.subDirectories.push({
+        name: "New Path",
+        parent: appState.directory,
+        pageIDs: [],
+        subDirectories: [],
+      });
+    }}>+📂</button
   >
 </header>
 
@@ -60,44 +62,34 @@
   <div class="current-path">
     <button
       class="back-button"
-      disabled={!appState.path.parent}
+      disabled={!appState.directory.parent}
       onclick={() => {
-        if (appState.path.parent) {
-          appState.path = appState.path.parent;
+        if (appState.path.length > 0) {
+          appState.path.pop();
         }
       }}>Back</button
     >
-
-    {#each appState.directory as path, i}
-      {#if i === appState.directory.length - 1}
-        <p>/ <input type="text" bind:value={appState.path.name} /></p>
+    {#each appState.path as directory, i}
+      {#if i === appState.path.length - 1}
+        <p>/ <input type="text" bind:value={directory.name} /></p>
       {:else}
-        <p>
-          / <button
-            onclick={() => {
-              appState.path = path;
-            }}>{path.name}</button
-          >
-        </p>
+        <p>/ {directory.name}</p>
       {/if}
     {/each}
   </div>
   <section id="items">
-    {#each appState.path.subpaths as subpath}
+    {#each appState.directory.subDirectories as subDirectory, i}
       <div class="path">
         <p>📂</p>
-        <input type="text" bind:value={subpath.name} />
+        <input type="text" bind:value={subDirectory.name} />
         <button
           class="open-subpath-button"
-          onclick={() => (appState.path = subpath)}>Go</button
+          onclick={() => appState.directory = subDirectory}>Go</button
         >
         <button
           class="delete-subpath-button"
           onclick={() => {
-            appState.path.subpaths.splice(
-              appState.path.subpaths.indexOf(subpath),
-              1
-            );
+            appState.directory.subDirectories.slice(i, 1);
           }}>❌</button
         >
       </div>

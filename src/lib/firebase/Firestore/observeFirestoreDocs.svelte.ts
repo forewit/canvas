@@ -19,7 +19,7 @@ export const observeUserDoc = function () {
             } else {
                 console.log("Fetched firestore userDoc" + (userDocSnap.metadata.hasPendingWrites || userDocSnap.metadata.fromCache ? " (local):" : ":"), firebaseState.user?.email);
                 const fetchedData = userDocSnap.data();
-                firebaseState.userDoc = fetchedData;
+                Object.assign(firebaseState.userDoc, fetchedData);
             }
         },
         (error) => {
@@ -43,11 +43,11 @@ export const observePagesCollection = function () {
 
             if (change.type === "added" || change.type === "modified") {
                 console.log("Fetched firestore pageDoc" + ((change.doc.metadata.hasPendingWrites || change.doc.metadata.fromCache ? " (local):" : ":")), docId.slice(0, 4));
-                firebaseState.pageDocs[docId] = docData
+                firebaseState.pageDocs.get()[docId] = docData
             }
             else if (change.type === "removed") {
                 console.log("Firestore pageDoc removed" + ((change.doc.metadata.hasPendingWrites || change.doc.metadata.fromCache ? " (local):" : ":")), docId.slice(0, 4));
-                delete firebaseState.pageDocs[docId];
+                delete firebaseState.pageDocs.get()[docId];
             }
         });
     });

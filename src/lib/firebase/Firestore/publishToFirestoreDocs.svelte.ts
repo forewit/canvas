@@ -45,7 +45,7 @@ async function _publishPageToFirestore(id: string) {
             title: pagesState.get()[id].title,
             content: pagesState.get()[id].content
         }
-        if (firebaseState.pageDocs[id]) {
+        if (firebaseState.pageDocs.get()[id]) {
             await updateDoc(pageRef, pageData);
         } else {
             await setDoc(pageRef, pageData);

@@ -1,9 +1,9 @@
 import { observable } from "$lib/Utils/observable";
 
-export type Path = {
+export type Directory = {
   name: string
-  parent: Path | null
-  subpaths: Path[]
+  parent: Directory | null
+  subDirectories: Directory[]
   pageIDs: string[]
 }
 
@@ -11,7 +11,7 @@ function createUserState() {
   let lastUpdated = $state(0);
   let themeName = $state("Canvas");
   let spellcheck = $state(true);
-  let root: Path = $state({ name: "Home", parent: null, subpaths: [], pageIDs: [] });
+  let root: Directory = $state({name: "Home", parent: null, subDirectories: [], pageIDs: [] });
 
   return observable({
     get lastUpdated() { return lastUpdated },

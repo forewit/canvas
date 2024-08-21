@@ -19,7 +19,7 @@ export const syncUserStateAndFirestore = function () {
         } else if (firebaseState.userDoc.get().lastUpdated > userState.get().lastUpdated) {
             console.log("userState updated.")
             userState.untrack(() => {
-                Object.assign(userState, firebaseState.userDoc);
+                userState.set(firebaseState.userDoc.get())
             })
         } else {
             firebaseState.isPublishing = true;

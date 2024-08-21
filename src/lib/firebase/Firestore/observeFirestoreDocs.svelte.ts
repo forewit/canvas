@@ -19,7 +19,7 @@ export const observeUserDoc = function () {
             } else {
                 console.log("Fetched firestore userDoc" + (userDocSnap.metadata.hasPendingWrites || userDocSnap.metadata.fromCache ? " (local):" : ":"), firebaseState.user?.email);
                 const fetchedData = userDocSnap.data();
-                Object.assign(firebaseState.userDoc, fetchedData);
+                firebaseState.userDoc.set(fetchedData);
             }
         },
         (error) => {

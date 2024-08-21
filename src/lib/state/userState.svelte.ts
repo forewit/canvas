@@ -2,16 +2,22 @@ import { observable } from "$lib/Utils/observable";
 
 export type Directory = {
   name: string
-  parent: Directory | null
-  subDirectories: Directory[]
+  subDirectories: Record<string, Directory>
   pageIDs: string[]
+}
+
+export type UserState ={
+  lastUpdated: number
+  themeName: string
+  spellcheck: boolean
+  root: Directory
 }
 
 function createUserState() {
   let lastUpdated = $state(0);
   let themeName = $state("Canvas");
   let spellcheck = $state(true);
-  let root: Directory = $state({name: "Home", parent: null, subDirectories: [], pageIDs: [] });
+  let root: Directory = $state({ name: "Home", subDirectories: {}, pageIDs: [] });
 
   return observable({
     get lastUpdated() { return lastUpdated },
@@ -28,4 +34,3 @@ function createUserState() {
   )
 }
 export const userState = createUserState();
-

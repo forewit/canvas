@@ -1,16 +1,17 @@
 export type Observable<T extends object> = {
     subscribe: (fn: (prop: any, value: any) => void) => () => void
     untrack: (fn: Function) => void
-    notify: (prop: any, value?: any) => void
+    notify: (prop?: any, value?: any) => void
     get: () => T
+    set: (value: T) => void
 }
 
 export const observable = <T extends object>(source: T, options?: { beforeUpdate?: (target: T, prop: keyof T, value?: any) => void, intercept?: (prop: keyof T, value: any) => any }): Observable<T> => {
-    const { beforeUpdate, intercept } = {beforeUpdate: () => {}, intercept: (prop: keyof T, value:any) => value, ...options }; 
+    const { beforeUpdate, intercept } = { beforeUpdate: () => { }, intercept: (prop: keyof T, value: any) => value, ...options };
 
     let observers: Function[] = [];
     let untracked = false;
-    const notify = (prop: any, value?: any) => {
+    const notify = (prop?: any, value?: any) => {
         if (untracked) return;
         observers.forEach(fn => fn(prop, value));
     }
@@ -21,9 +22,10 @@ export const observable = <T extends object>(source: T, options?: { beforeUpdate
         }
     }
     const untrack = (fn: Function) => {
+        const old = untracked;
         untracked = true;
         const result = fn();
-        untracked = false;
+        untracked = old;
         return result;
     }
 
@@ -48,6 +50,10 @@ export const observable = <T extends object>(source: T, options?: { beforeUpdate
     const proxy: T = new Proxy(source, proxyHandlers);
     return {
         get() { return proxy },
+        set(value) {
+            untrack(() => Object.assign(proxy, value))
+            notify()
+        },
         get subscribe() { return subscribe.bind(source) },
         get untrack() { return untrack.bind(source) },
         get notify() { return notify.bind(source) }

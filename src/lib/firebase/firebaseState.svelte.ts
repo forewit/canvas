@@ -47,8 +47,11 @@ function createFirebaseState() {
     }
 
     return {
-        userDoc,
-        isPublishing,
+        get isPublishing() { return isPublishing },
+        set isPublishing(value) { isPublishing = value },
+        get userDoc() { return userDoc },
+        set userDoc(value) { userDoc = observable(value) },
+
         get pageDocs() { return pageDocs},
         get user() { return user },
         get isLoading() { return isLoading },

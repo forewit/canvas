@@ -10,7 +10,10 @@ const DEBOUNCE_DELAY = 1000;
 
 let pendingPublishes: Record<string, Function> = {};
 export const publishPageToFirestore = (id: string) => {
-    if (pendingPublishes[id]) return
+    if (pendingPublishes[id]){
+        pendingPublishes[id](); // call it so that the debounce is triggered
+        return
+    }
 
     pendingPublishes[id] = debounce(() => {
         delete pendingPublishes[id];

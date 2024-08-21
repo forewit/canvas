@@ -8,7 +8,8 @@
   import PublishingStatus from "$lib/Firebase/PublishingStatus.svelte";
   import { base } from "$app/paths";
 
-  let { children }: { children: Snippet } = $props();
+  let { children }: { children: Snippet } = $props(); 
+  
 
 
   $effect(() => {
@@ -20,6 +21,7 @@
       goto(base + "/login/");
     }
   });
+
 
   onDestroy(() => {
     firebaseState.destroy();

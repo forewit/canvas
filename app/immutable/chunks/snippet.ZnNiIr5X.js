@@ -1,1 +1,0 @@
-import{b as i,E as n,a as o,d as p}from"./runtime.CAZPmQP8.js";import{h as c,a as d}from"./disclose-version.D20hR_a1.js";function E(e,s,...f){var t=e,a,r;i(()=>{a!==(a=s())&&(r&&(p(r),r=null),a&&(r=o(()=>a(t,...f))))},n),c&&(t=d)}export{E as s};

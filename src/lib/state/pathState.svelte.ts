@@ -1,13 +1,26 @@
 import { userState } from "$lib/State/userState.svelte";
-import path from "path";
-import { untrack } from "svelte";
+
+type Folder = {
+    ids?: string[]
+    folders?: Record<string, Folder>
+}
+
+let root: Folder = {
+    folders: {
+        "my documents": {
+            ids: ["1", "2", "3"],
+        },
+        "my pages": {}
+    },
+    ids: ["A", "B", "C"]
+}
 
 export type Directory = {
     name: string
     subDirectories: Record<string, Directory>
     pageIDs: string[]
 }
-  
+
 function createPathState() {
     let root: Directory = $derived(userState.get().root)
     let currentPath: string[] = $state([])

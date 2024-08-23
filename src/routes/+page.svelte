@@ -5,7 +5,11 @@
   import { base } from "$app/paths";
   import { userState } from "$lib/State/userState.svelte";
   import { pathState } from "$lib/State/pathState.svelte";
-  
+  import { setDirectoryContext } from "$lib/State/directory.svelte";
+  import { getAppContext } from "$lib/Firebase/app.svelte";
+
+  const directory = setDirectoryContext();
+  const app = getAppContext();
 
   let currentPages = $derived.by(() => {
     let pages: Record<string, Page> = {};
@@ -30,8 +34,8 @@
   <button
     class="spellcheck-button"
     onclick={() => {
-      userState.get().spellcheck = !userState.get().spellcheck;
-    }}>Spellcheck: {userState.get().spellcheck}</button
+      app.spellcheck = !app.spellcheck;
+    }}>Spellcheck: {app.spellcheck}</button
   >
 
   <button

@@ -1,15 +1,18 @@
 <script lang="ts">
-  import { onDestroy, type Snippet } from "svelte";
-  import { firebaseState } from "$lib/Firebase/firebaseState.svelte";
+  import { type Snippet } from "svelte";
   import { appState } from "$lib/State/appState.svelte";
   import { goto } from "$app/navigation";
   import ThemeWrapper from "$lib/UI/ThemeWrapper.svelte";
   import ProgressBar from "$lib/UI/ProgressBar.svelte";
   import PublishingStatus from "$lib/Firebase/PublishingStatus.svelte";
   import { base } from "$app/paths";
+  import { setFirebaseContext } from "$lib/Firebase/firebase.svelte";
+  import { setAppContext } from "$lib/Firebase/app.svelte";
 
   let { children }: { children: Snippet } = $props(); 
   
+  const app = setAppContext();
+  const firebase = setFirebaseContext();
 
 
   $effect(() => {
@@ -17,19 +20,14 @@
   });
 
   $effect(() => {
-    if (!firebaseState.user && !firebaseState.isLoading) {
+    if (!firebase.user && !firebase.isLoading) {
       goto(base + "/login/");
     }
-  });
-
-
-  onDestroy(() => {
-    firebaseState.destroy();
   });
 </script>
 
 <ThemeWrapper>
-  {#if firebaseState.isLoading}
+  {#if firebase.isLoading}
     <ProgressBar />
   {:else}
     <div class="publishing-status">

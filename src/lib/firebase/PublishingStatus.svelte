@@ -1,12 +1,14 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import { firebaseState } from "./firebaseState.svelte";
+  import { getFirebaseContext } from "./firebase.svelte";
+
+  const firebase = getFirebaseContext();
 </script>
 
 <div
   class="status"
-  class:saving={firebaseState.isPublishing}
-  class:saved={!firebaseState.isPublishing && !firebaseState.isLoading}
+  class:saving={firebase.isPublishing}
+  class:saved={!firebase.isPublishing && !firebase.isLoading}
 >
   <span
     class="status-icon"

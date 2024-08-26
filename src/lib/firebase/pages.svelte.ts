@@ -12,7 +12,9 @@ function createPages() {
 
     const firebase = getFirebaseContext()
 
-    firebase.subscribeToPages((id) => {
+    firebase.subscribeToPages(syncPage)
+
+    function syncPage(id: string) {
         let localPage = pages[id]
         let firebasePage = firebase.pagesCollection[id]
 
@@ -44,7 +46,7 @@ function createPages() {
         } else if (sanitizedPage.lastUpdated === localPage.lastUpdated) {
             console.log("page synced with firebase", id.slice(0, 4))
         }
-    })
+    }
 
     function sanitizePage(page: any): { wasValid: boolean, sanitizedPage: Page } {
         return {
@@ -70,15 +72,14 @@ function createPages() {
                 if (value === title) return;
                 title = value;
                 lastUpdated = Date.now();
-                console.log("hi")
-                firebase.notifyPageSubscribers(id);
+                syncPage(id);
             },
             get content() { return content },
             set content(value) {
                 if (value === content) return
                 content = value
                 lastUpdated = Date.now()
-                firebase.notifyPageSubscribers(id)
+                syncPage(id)
             }
         }
     }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Snippet } from "svelte";
+  import { onDestroy, type Snippet } from "svelte";
   import { appState } from "$lib/State/appState.svelte";
   import { goto } from "$app/navigation";
   import ThemeWrapper from "$lib/UI/ThemeWrapper.svelte";
@@ -8,12 +8,13 @@
   import { base } from "$app/paths";
   import { setFirebaseContext } from "$lib/Firebase/firebase.svelte";
   import { setAppContext } from "$lib/Firebase/app.svelte";
+  import { setPagesContext } from "$lib/Firebase/pages.svelte";
 
   let { children }: { children: Snippet } = $props(); 
   
-  const app = setAppContext();
   const firebase = setFirebaseContext();
-
+  const app = setAppContext();
+  const pages = setPagesContext();
 
   $effect(() => {
     appState.authRedirect = window.location.pathname;
@@ -24,6 +25,10 @@
       goto(base + "/login/");
     }
   });
+
+  onDestroy(() => {
+    firebase.destroy();
+  })
 </script>
 
 <ThemeWrapper>

@@ -7,20 +7,21 @@
   import { pathState } from "$lib/State/pathState.svelte";
   import { setDirectoryContext } from "$lib/State/directory.svelte";
   import { getAppContext } from "$lib/Firebase/app.svelte";
+  import { getPagesContext } from "$lib/Firebase/pages.svelte";
 
   const directory = setDirectoryContext();
   const app = getAppContext();
+  const pages = getPagesContext();
 
   let currentPages = $derived.by(() => {
-    let pages: Record<string, Page> = {};
+    let currentPages: Record<string, Page> = {};
     pathState.currentDirectory.pageIDs.forEach((id) => {
-      if (id in pagesState.get()) {
-        pages[id] = pagesState.get()[id];
+      if (id in pages) {
+        currentPages[id] = pagesState.get()[id];
       }
     });
-    return pages;
-  })
-
+    return currentPages;
+  });
 </script>
 
 <header>
@@ -47,7 +48,7 @@
         content: "",
         lastUpdated: Date.now(),
       };
-      pagesState.get()[id] = page;
+      pages[id] = page;
       pathState.currentDirectory.pageIDs.push(id);
     }}>+📄</button
   >
@@ -74,8 +75,8 @@
       class="home-button"
       onclick={() => {
         pathState.currentPath = [];
-      }}
-    >{pathState.root.name}</button>
+      }}>{pathState.root.name}</button
+    >
     {#each pathState.currentPath as id, i}
       {#if i === pathState.currentPath.length - 1}
         <p>
@@ -87,7 +88,8 @@
           onclick={() => {
             pathState.currentPath = pathState.currentPath.slice(0, i + 1);
           }}
-          >{pathState.getDirectory(pathState.currentPath.slice(0, i + 1)).name}</button
+          >{pathState.getDirectory(pathState.currentPath.slice(0, i + 1))
+            .name}</button
         >
       {/if}
     {/each}
@@ -112,43 +114,25 @@
       </div>
     {/each}
 
-    {#each Object.entries(currentPages) as [id, page]}
-      <div class="page">
-        <p>📄</p>
-        <input type="text" bind:value={page.title} />
-        <button
-          class="goto-page-button"
-          onclick={() => goto(base + "/" + id + "/")}
-        >
-          Go
-        </button>
-        <button
-          class="close-page-button"
-          onclick={() => delete pagesState.get()[id]}>❌</button
-        >
-      </div>
-    {/each}
   </section>
 
-  <br/>
-  <br/>
   <p>All pages:</p>
-  {#each Object.entries(pagesState.get()) as [id, page]}
-      <div class="page">
-        <p>📄</p>
-        <input type="text" bind:value={page.title} />
-        <button
-          class="goto-page-button"
-          onclick={() => goto(base + "/" + id + "/")}
-        >
-          Go
-        </button>
-        <button
-          class="close-page-button"
-          onclick={() => delete pagesState.get()[id]}>❌</button
-        >
-      </div>
-    {/each}
+  {#each Object.entries(pages) as [id, page]}
+    <div class="page">
+      <p>📄</p>
+      <input type="text" bind:value={page.title} />
+      <button
+        class="goto-page-button"
+        onclick={() => goto(base + "/" + id + "/")}
+      >
+        Go
+      </button>
+      <button
+        class="close-page-button"
+        onclick={() => delete pages[id]}>❌</button
+      >
+    </div>
+  {/each}
 </main>
 
 <style>

@@ -1,43 +1,59 @@
-import { getContext, setContext, untrack } from 'svelte';
+import { getContext, setContext } from 'svelte';
+import { getFirebaseContext } from './firebase.svelte';
+import { toStore } from 'svelte/store';
 
-class App {
-    // user updatable states
-    themeName = $state("Canvas")
-    spellcheck = $state(true)
+function createApp() {
+    let themeName = $state("Canvas")
+    let spellcheck = $state(true)
+    let lastUpdated = 0;
 
-    private _themeName = $state("Canvas")
-    private _spellcheck = $state(true)
+    const firebase = getFirebaseContext()
 
-    constructor(){
-        $effect(()=>{
-            this._spellcheck = this.spellcheck
-            this._themeName = this.themeName
+    function publishToFirebase() {
+        firebase.publishDataToUserDoc({
+            lastUpdated,
+            themeName,
+            spellcheck,
         })
     }
 
-    getUserUpdatableStates() {
-        return {
-            themeName: this.themeName,
-            spellcheck: this.spellcheck
-        }
+    function importFromFirebase(data: any) {
+        if (data.themeName !== undefined) themeName = data.themeName
+        if (data.spellcheck !== undefined) spellcheck = data.spellcheck
     }
 
-    update(data: any) {
-        if (data.themeName !== undefined) this._themeName = data.themeName
-        if (data.spellcheck !== undefined) this._spellcheck = data.spellcheck
-    }
-    export(){
-        return {
-            themeName: this._themeName,
-            spellcheck: this._spellcheck,
+    let userDocStore = toStore(() => firebase.userDoc)
+    userDocStore.subscribe((userDoc) => {
+        if (firebase.isLoading) return
+        if (userDoc.lastUpdated === undefined || userDoc.lastUpdated < lastUpdated) {
+            publishToFirebase()
+        } else if (userDoc.lastUpdated > lastUpdated) {
+            importFromFirebase(userDoc)
+        } else if (userDoc.lastUpdated === lastUpdated) {
+            console.log("app in sync with user doc")
+        }
+    })
+
+    return {
+        get themeName() { return themeName },
+        set themeName(value) {
+            themeName = value
+            lastUpdated = Date.now()
+            publishToFirebase()
+        },
+        get spellcheck() { return spellcheck },
+        set spellcheck(value) {
+            spellcheck = value
+            lastUpdated = Date.now()
+            publishToFirebase()
         }
     }
 }
 
 const APP_KEY = Symbol('app')
 
-export const setAppContext = (): App => {
-    const nApp = new App()
+export const setAppContext = () => {
+    const nApp = createApp();
     return setContext(APP_KEY, nApp)
 }
 

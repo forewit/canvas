@@ -7,95 +7,71 @@ import { debounce } from "$lib/scripts/utils/debouncing";
 
 const DEBOUNCE_DELAY = 1000;
 
-class Firebase {
-    user: User | null = $state(null)
-    isLoading = $state(true)
-    isPublishing = $state(false)
-    userDoc: DocumentData = $state({})
-    pagesCollection: Record<string, DocumentData> = $state({})
+function createFirebase() {
+    let pageSubscribers: ((id: string, type: "added" | "modified" | "removed") => void)[] = []
+    let publishingQueue: Record<string, { publish: () => void, data: any }> = $state({});
+    let cleanupFunctions: (() => void)[] = []
+    let user: User | null = $state(null)
+    let isLoading = $state(true)
+    let isPublishing = $derived(Object.keys(publishingQueue).length > 0)
+    let userDoc: DocumentData = $state({})
+    let pagesCollection: Record<string, DocumentData> = $state({})
 
-    private pageSubscribers: ((id: string) => void)[] = []
-    private pendingPublishes: Record<string, () => void> = {};
-    private cleanupFunctions: (() => void)[] = []
 
-    constructor() {
-        this.cleanupFunctions.push(auth.onAuthStateChanged(this.authChange))
-    }
-
-    async login(email: string, password: string) {
+    async function login(email: string, password: string) {
         await signInWithEmailAndPassword(auth, email, password)
     }
 
-    async logout() {
+    async function logout() {
         await signOut(auth)
     }
 
-    destroy() {
-        console.warn("Closing Firebase");
-        this.cleanupFunctions.forEach((unsub) => unsub())
-        this.cleanupFunctions = []
-    }
-
-    publishDataToUserDoc(data: any) {
-        this.isPublishing = true;
-        this.debounced_publishDataToUserDoc(data);
-    }
-
-    publishDataToPageDoc(id: string, data?: any) {
-        if (this.pendingPublishes[id]) {
-            this.pendingPublishes[id](); // call it so that the debounce is triggered
-            return
-        }
-
-        this.pendingPublishes[id] = debounce(() => {
-            delete this.pendingPublishes[id];
-            this.publishPageDoc(id, data);
-            console.log(id, data)
-        }, DEBOUNCE_DELAY);
-
-        this.pendingPublishes[id]();
-    }
-
-    subscribeToPages(fn: (id: string) => void) {
-        this.pageSubscribers.push(fn)
-        return () => {
-            this.pageSubscribers = this.pageSubscribers.filter(subscriber => subscriber !== fn)
-        }
-    }
-
-    notifyPageSubscribers(id: string) {
-        this.pageSubscribers.forEach(fn => fn(id))
-    }
-
-    private authChange = (currentUser: User | null) => {
-        this.user = currentUser
+    function authChange(currentUser: User | null) {
+        user = currentUser
 
         if (currentUser) {
             console.warn("Logged in, subscribing to docs");
-            this.cleanupFunctions.push(this.syncUserDoc())
-            this.cleanupFunctions.push(this.syncPagesCollection())
+            cleanupFunctions.push(syncUserDoc())
+            cleanupFunctions.push(syncPagesCollection())
         } else {
             console.warn("Logged out, unsubscribing from docs");
-            this.cleanupFunctions.forEach((unsub) => unsub())
-            this.cleanupFunctions = []
+            cleanupFunctions.forEach((unsub) => unsub())
+            cleanupFunctions = []
         }
     }
 
-    private syncUserDoc() {
-        if (!this.user) {
+    function destroy() {
+        console.warn("Closing Firebase");
+        cleanupFunctions.forEach((unsub) => unsub())
+        cleanupFunctions = []
+    }
+
+    function subscribeToPages(fn: (id: string, type: "added" | "modified" | "removed") => void) {
+        pageSubscribers.push(fn)
+        return () => {
+            pageSubscribers = pageSubscribers.filter(subscriber => subscriber !== fn)
+        }
+    }
+
+    function notifyPageSubscribers(id: string, type: "added" | "modified" | "removed") {
+        pageSubscribers.forEach(fn => fn(id, type))
+    }
+
+    function syncUserDoc() {
+        if (!user) {
             throw new Error("Cannot sync firestore user doc, user is null")
         }
-        const userDocRef = doc(db, "users", this.user.uid);
+        const userDocRef = doc(db, "users", user.uid);
         return onSnapshot(
             userDocRef,
             (userDocSnap) => {
-                this.isLoading = false;
+                isLoading = false;
                 if (!userDocSnap.exists()) {
                     console.log("Creating firestore user doc");
                     setDoc(userDocRef, {}, { merge: true });
                 } else {
                     console.log("Fetched firestore user doc" + (userDocSnap.metadata.hasPendingWrites || userDocSnap.metadata.fromCache ? " (local)" : ""));
-                    this.userDoc = userDocSnap.data()
+                    userDoc = userDocSnap.data()
                 }
             },
             (error) => {
@@ -104,24 +80,24 @@ class Firebase {
         );
     }
 
-    private syncPagesCollection() {
-        if (!this.user) {
+    function syncPagesCollection() {
+        if (!user) {
             throw new Error("Cannot sync firestore pages collection, user is null")
         }
-        const pagesCollectionRef = collection(db, "users", this.user.uid, "pages");
+        const pagesCollectionRef = collection(db, "users", user.uid, "pages");
         return onSnapshot(pagesCollectionRef,
             (pagesCollectionSnap) => {
                 pagesCollectionSnap.docChanges().forEach((change) => {
                     const id = change.doc.id;
                     if (change.type === "added" || change.type === "modified") {
                         console.log("Fetched firestore page doc " + id.slice(0, 4) + (change.doc.metadata.hasPendingWrites || change.doc.metadata.fromCache ? " (local)" : ""));
-                        this.pagesCollection[id] = change.doc.data()
+                        pagesCollection[id] = change.doc.data()
                     }
                     if (change.type === "removed") {
                         console.log("Page doc deleted from firestore" + id.slice(0, 4));
-                        delete this.pagesCollection[id]
+                        delete pagesCollection[id]
                     }
-                    this.notifyPageSubscribers(id);
+                    notifyPageSubscribers(id, change.type);
                 })
             },
             (error) => {
@@ -130,58 +106,100 @@ class Firebase {
         );
     }
 
-    private debounced_publishDataToUserDoc = debounce(async (data: any) => {
-        if (!this.user) {
+    async function publishUserDoc(data: any) {
+        if (!user) {
             console.warn("Not logged in, cannot publish user doc to firestore");
             return
         }
-        this.isPublishing = true;
-        const userRef = doc(db, "users", this.user.uid);
-
+        const userRef = doc(db, "users", user.uid);
         try {
             console.log("Publishing app data to firestore");
             await updateDoc(userRef, data);
-
         } catch (err) {
             console.error("Error while publishing user doc to firestore", err);
-        } finally {
-            this.isPublishing = false;
         }
-    }, DEBOUNCE_DELAY)
+    }
 
-    private async publishPageDoc(id: string, data?: any) {
-        if (!this.user) {
+    async function publishPageDoc(id: string, data?: any) {
+        if (!user) {
             console.warn("Not logged in, cannot publish pages collection to firestore");
             return
         }
         if (!data) {
             console.warn("deleting page doc from firestore: ", id.slice(0, 4));
-            await deleteDoc(doc(db, "users", this.user.uid, "pages", id));
-            this.isPublishing = false;
+            await deleteDoc(doc(db, "users", user.uid, "pages", id));
             return
         }
 
-        this.isPublishing = true;
-        const pageRef = doc(db, "users", this.user.uid, "pages", id);
+        const pageRef = doc(db, "users", user.uid, "pages", id);
         try {
             console.log("Publishing page doc to firestore:" + id.slice(0, 4));
-            if (this.pagesCollection[id]) {
+            if (pagesCollection[id]) {
                 await updateDoc(pageRef, data);
             } else {
                 await setDoc(pageRef, data);
             }
         } catch (err) {
             console.error("Error while publishing page doc to firestore", err);
-        } finally {
-            this.isPublishing = false;
         }
+    }
+
+
+    function publishDataToUserDoc(data: any) {
+        if (publishingQueue["user"] !== undefined) {
+            publishingQueue["user"].data = data;
+            publishingQueue["user"].publish(); // call it so that the debounce is triggered
+            return;
+        }
+
+        publishingQueue["user"] = {
+            publish: debounce(async () => {
+                await publishUserDoc(publishingQueue["user"].data);
+                delete publishingQueue["user"];
+            }, DEBOUNCE_DELAY),
+            data: data
+        }
+        publishingQueue["user"].publish();
+    }
+
+    function publishDataToPageDoc(id: string, data?: any) {
+        if (publishingQueue[id] !== undefined) {
+            publishingQueue[id].data = data;
+            publishingQueue[id].publish(); // call it so that the debounce is triggered
+            return;
+        }
+
+        publishingQueue[id] = {
+            publish: debounce(async () => {
+                await publishPageDoc(id, publishingQueue[id].data || undefined);
+                delete publishingQueue[id];
+            }, DEBOUNCE_DELAY),
+            data: data || undefined
+        }
+        publishingQueue[id].publish();
+    }
+
+    cleanupFunctions.push(auth.onAuthStateChanged(authChange))
+
+    return {
+        get user() { return user },
+        get isLoading() { return isLoading },
+        get isPublishing() { return isPublishing },
+        get userDoc() { return userDoc },
+        get pagesCollection() { return pagesCollection },
+        get login() { return login },
+        get logout() { return logout },
+        get destroy() { return destroy },
+        get publishDataToUserDoc() { return publishDataToUserDoc },
+        get publishDataToPageDoc() { return publishDataToPageDoc },
+        get subscribeToPages() { return subscribeToPages },
     }
 }
 
 const FIREBASE_KEY = Symbol('firebase')
 
-export const setFirebaseContext = (): Firebase => {
-    const nFirebase = new Firebase()
+export const setFirebaseContext = () => {
+    const nFirebase = createFirebase()
     return setContext(FIREBASE_KEY, nFirebase)
 }
 

@@ -14,13 +14,20 @@ function createPages() {
 
     firebase.subscribeToPages(syncPage)
 
-    function syncPage(id: string) {
+    function syncPage(id: string, type: "added" | "modified" | "removed") {
         let localPage = pages[id]
         let firebasePage = firebase.pagesCollection[id]
 
-        if (!firebasePage) {
+        // page was removed from firebase
+        if (type === "removed") {
             if (localPage) delete pages[id]
             console.log("deleted page", id.slice(0, 4))
+            return;
+        }
+
+        // the page is still being published to firebase
+        if (!firebasePage) {
+            firebase.publishDataToPageDoc(id, localPage)
             return;
         }
 
@@ -36,30 +43,49 @@ function createPages() {
             pages[id] = setupPage(id, sanitizedPage)
             console.log("added page", id.slice(0, 4))
             return;
-
         }
 
         if (sanitizedPage.lastUpdated < localPage.lastUpdated) {
             firebase.publishDataToPageDoc(id, localPage)
         } else if (sanitizedPage.lastUpdated > localPage.lastUpdated) {
-            pages[id] = setupPage(id,sanitizedPage)
+            pages[id] = setupPage(id, sanitizedPage)
         } else if (sanitizedPage.lastUpdated === localPage.lastUpdated) {
             console.log("page synced with firebase", id.slice(0, 4))
         }
     }
 
     function sanitizePage(page: any): { wasValid: boolean, sanitizedPage: Page } {
-        return {
-            wasValid: (page.lastUpdated !== undefined && page.title !== undefined && page.content !== undefined),
-            sanitizedPage: {
-                title: (page.title === undefined) ? "New Page" : page.title,
-                content: (page.content === undefined) ? "" : page.content,
-                lastUpdated: (page.lastUpdated === undefined) ? Date.now() : page.lastUpdated
-            }
+        let wasValid = true;
+        let sanitizedPage = {
+            title: "New Page",
+            content: "",
+            lastUpdated: Date.now()
         }
+
+        if (typeof page !== "object") return { wasValid: false, sanitizedPage }
+
+        if (Object.hasOwn(page, "lastUpdated") && typeof page.lastUpdated === "number") {
+            sanitizedPage.lastUpdated = page.lastUpdated
+        } else {
+            wasValid = false
+        }
+
+        if (Object.hasOwn(page, "title") && typeof page.title === "string") {
+            sanitizedPage.title = page.title
+        } else {
+            wasValid = false
+        }
+
+        if (Object.hasOwn(page, "content") && typeof page.content === "string") {
+            sanitizedPage.content = page.content
+        } else {
+            wasValid = false
+        }
+
+        return { wasValid, sanitizedPage }
     }
 
-    const setupPage = function (id: string, page: Page) {
+    const setupPage = function (id: string, page: Page): Page {
         let lastUpdated = $state(page.lastUpdated);
         let title = $state(page.title);
         let content = $state(page.content);
@@ -72,14 +98,14 @@ function createPages() {
                 if (value === title) return;
                 title = value;
                 lastUpdated = Date.now();
-                syncPage(id);
+                syncPage(id, "modified");
             },
             get content() { return content },
             set content(value) {
                 if (value === content) return
                 content = value
                 lastUpdated = Date.now()
-                syncPage(id)
+                syncPage(id, "modified")
             }
         }
     }
@@ -87,7 +113,6 @@ function createPages() {
     const pagesProxy = new Proxy(pages, {
         set: (target, prop: string, value) => {
             target[prop] = setupPage(prop, value)
-            target[prop].lastUpdated = Date.now()
             firebase.publishDataToPageDoc(prop, value)
             return true
         },

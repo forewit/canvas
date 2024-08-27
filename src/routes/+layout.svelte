@@ -8,12 +8,14 @@
   import { setFirebaseContext } from "$lib/firebase.svelte";
   import { setAppContext } from "$lib/app.svelte";
   import { setPagesContext } from "$lib/pages.svelte";
+  import { setDirectoriesContext } from "$lib/directories.svelte";
 
   let { children }: { children: Snippet } = $props(); 
   
   const firebase = setFirebaseContext();
-  const app = setAppContext();
   const pages = setPagesContext();
+  const directory = setDirectoriesContext();
+  const app = setAppContext();
 
   $effect(() => {
     app.authRedirect = window.location.pathname;

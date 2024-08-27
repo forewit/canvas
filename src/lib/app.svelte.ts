@@ -1,14 +1,15 @@
-import { getContext, setContext } from 'svelte';
+import { getContext, setContext, untrack } from 'svelte';
 import { getFirebaseContext } from '$lib/firebase.svelte';
 import { toStore } from 'svelte/store';
 
 function createApp() {
+    const firebase = getFirebaseContext()
+
+    let lastUpdated = 0;
     let authRedirect = $state("")
     let themeName = $state("Canvas")
     let spellcheck = $state(true)
-    let lastUpdated = 0;
 
-    const firebase = getFirebaseContext()
 
     function publishToFirebase() {
         firebase.publishDataToUserDoc({
@@ -19,8 +20,8 @@ function createApp() {
     }
 
     function importFromFirebase(data: any) {
-        if (data.themeName !== undefined) themeName = data.themeName
-        if (data.spellcheck !== undefined) spellcheck = data.spellcheck
+        if (Object.hasOwn(data, "themeName") && typeof data.themeName === "string") themeName = data.themeName
+        if (Object.hasOwn(data, "spellcheck") && typeof data.spellcheck === "boolean") spellcheck = data.spellcheck
     }
 
     let userDocStore = toStore(() => firebase.userDoc)
@@ -50,7 +51,7 @@ function createApp() {
             spellcheck = value
             lastUpdated = Date.now()
             publishToFirebase()
-        }
+        },
     }
 }
 

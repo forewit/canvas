@@ -8,7 +8,6 @@ import { debounce } from "$lib/scripts/utils/debouncing";
 const DEBOUNCE_DELAY = 1000;
 
 function createFirebase() {
-    let pageSubscribers: ((id: string, type: "added" | "modified" | "removed") => void)[] = []
     let publishingQueue: Record<string, { publish: () => void, data: any }> = $state({});
     let cleanupFunctions: (() => void)[] = []
     let user: User | null = $state(null)
@@ -16,6 +15,10 @@ function createFirebase() {
     let isPublishing = $derived(Object.keys(publishingQueue).length > 0)
     let userDoc: DocumentData = $state({})
     let pagesCollection: Record<string, DocumentData> = $state({})
+    let pageSubscribers: ((id: string, type: "added" | "modified" | "removed") => void)[] = []
+
+    let directoriesCollection: Record<string, DocumentData> = $state({})
+    let directoriesSubscribers: ((id: string, type: "added" | "modified" | "removed") => void)[] = []
 
 
     async function login(email: string, password: string) {
@@ -33,6 +36,7 @@ function createFirebase() {
             console.warn("Logged in, subscribing to docs");
             cleanupFunctions.push(syncUserDoc())
             cleanupFunctions.push(syncPagesCollection())
+            cleanupFunctions.push(syncDirectoriesCollection())
         } else {
             console.warn("Logged out, unsubscribing from docs");
             cleanupFunctions.forEach((unsub) => unsub())
@@ -46,16 +50,28 @@ function createFirebase() {
         cleanupFunctions = []
     }
 
-    function subscribeToPages(fn: (id: string, type: "added" | "modified" | "removed") => void) {
+    function subscribeToPagesCollection(fn: (id: string, type: "added" | "modified" | "removed") => void) {
         pageSubscribers.push(fn)
         return () => {
             pageSubscribers = pageSubscribers.filter(subscriber => subscriber !== fn)
         }
     }
-
+    
     function notifyPageSubscribers(id: string, type: "added" | "modified" | "removed") {
         pageSubscribers.forEach(fn => fn(id, type))
     }
+
+    function notifyDirectoriesSubscribers(id: string, type: "added" | "modified" | "removed") {
+        directoriesSubscribers.forEach(fn => fn(id, type))
+    }
+
+    function subscribeToDirectoriesCollection(fn: (id: string, type: "added" | "modified" | "removed") => void) {
+        directoriesSubscribers.push(fn)
+        return () => {
+            directoriesSubscribers = directoriesSubscribers.filter(subscriber => subscriber !== fn)
+        }
+    }
+
 
     function syncUserDoc() {
         if (!user) {
@@ -94,7 +110,7 @@ function createFirebase() {
                         pagesCollection[id] = change.doc.data()
                     }
                     if (change.type === "removed") {
-                        console.log("Page doc deleted from firestore" + id.slice(0, 4));
+                        console.log("Page doc deleted from firestore " + id.slice(0, 4));
                         delete pagesCollection[id]
                     }
                     notifyPageSubscribers(id, change.type);
@@ -102,6 +118,32 @@ function createFirebase() {
             },
             (error) => {
                 console.error("Error while fetching firestore pages collection", error)
+            }
+        );
+    }
+
+    function syncDirectoriesCollection() {
+        if (!user) {
+            throw new Error("Cannot sync firestore directories collection, user is null")
+        }
+        const collectionRef = collection(db, "users", user.uid, "directories");
+        return onSnapshot(collectionRef,
+            (snap) => {
+                snap.docChanges().forEach((change) => {
+                    const id = change.doc.id;
+                    if (change.type === "added" || change.type === "modified") {
+                        console.log("Fetched firestore directory doc " + id.slice(0, 4) + (change.doc.metadata.hasPendingWrites || change.doc.metadata.fromCache ? " (local)" : ""));
+                        directoriesCollection[id] = change.doc.data()
+                    }
+                    if (change.type === "removed") {
+                        console.log("Directory doc deleted from firestore" + id.slice(0, 4));
+                        delete directoriesCollection[id]
+                    }
+                    notifyDirectoriesSubscribers(id, change.type);
+                })
+            },
+            (error) => {
+                console.error("Error while fetching firestore directories collection", error)
             }
         );
     }
@@ -144,6 +186,30 @@ function createFirebase() {
         }
     }
 
+    async function publishDirectoryDoc(id: string, data?: any) {
+        if (!user) {
+            console.warn("Not logged in, cannot publish directories collection to firestore");
+            return
+        }
+        if (!data) {
+            console.warn("deleting directory doc from firestore: ", id.slice(0, 4));
+            await deleteDoc(doc(db, "users", user.uid, "directories", id));
+            return
+        }
+
+        const directoryRef = doc(db, "users", user.uid, "directories", id);
+        try {
+            console.log("Publishing directory doc to firestore:" + id.slice(0, 4));
+            if (directoriesCollection[id]) {
+                await updateDoc(directoryRef, data);
+            } else {
+                await setDoc(directoryRef, data);
+            }
+        } catch (err) {
+            console.error("Error while publishing directory doc to firestore", err);
+        }
+    }
+
 
     function publishDataToUserDoc(data: any) {
         if (publishingQueue["user"] !== undefined) {
@@ -179,6 +245,23 @@ function createFirebase() {
         publishingQueue[id].publish();
     }
 
+    function publishDataToDirectoryDoc(id: string, data?: any) {
+        if (publishingQueue[id] !== undefined) {
+            publishingQueue[id].data = data;
+            publishingQueue[id].publish(); // call it so that the debounce is triggered
+            return;
+        }
+
+        publishingQueue[id] = {
+            publish: debounce(async () => {
+                await publishDirectoryDoc(id, publishingQueue[id].data || undefined);
+                delete publishingQueue[id];
+            }, DEBOUNCE_DELAY),
+            data: data || undefined
+        }
+        publishingQueue[id].publish();
+    }
+
     cleanupFunctions.push(auth.onAuthStateChanged(authChange))
 
     return {
@@ -187,12 +270,15 @@ function createFirebase() {
         get isPublishing() { return isPublishing },
         get userDoc() { return userDoc },
         get pagesCollection() { return pagesCollection },
+        get directoriesCollection() { return directoriesCollection },
         get login() { return login },
         get logout() { return logout },
         get destroy() { return destroy },
         get publishDataToUserDoc() { return publishDataToUserDoc },
         get publishDataToPageDoc() { return publishDataToPageDoc },
-        get subscribeToPages() { return subscribeToPages },
+        get publishDataToDirectoryDoc() { return publishDataToDirectoryDoc },
+        get subscribeToPagesCollection() { return subscribeToPagesCollection },
+        get subscribeToDirectoriesCollection() { return subscribeToDirectoriesCollection },
     }
 }
 

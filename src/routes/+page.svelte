@@ -4,10 +4,14 @@
   import { getAppContext } from "$lib/app.svelte";
   import { getPagesContext } from "$lib/pages.svelte";
   import { getFirebaseContext } from "$lib/firebase.svelte";
+  import { getDirectoriesContext } from "$lib/directories.svelte";
 
   const app = getAppContext();
   const pages = getPagesContext();
   const firebase = getFirebaseContext();
+  const directory = getDirectoriesContext();
+
+  let directoryString = $derived(JSON.stringify(directory.root));
 </script>
 
 <header>
@@ -37,12 +41,20 @@
       pages[id] = page;
     }}>+📄</button
   >
+
+  <button
+  class="new-folder-button"
+  onclick={() => {
+    directory.newFolder();
+  }}>+📁</button
+>
+
 </header>
 
 <main>
   
 
-<section id="pages"></section>
+<section id="pages">
   {#each Object.entries(pages) as [id, page]}
     <div class="page">
       <p>📄</p>
@@ -59,6 +71,9 @@
       >
     </div>
   {/each}
+</section>
+
+<p>📁 {directoryString}</p>
 </main>
 
 <style>

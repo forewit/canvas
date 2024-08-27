@@ -1,7 +1,8 @@
 import { getContext, setContext } from 'svelte';
 import { getFirebaseContext } from './firebase.svelte';
+import type { DocumentData } from 'firebase/firestore';
 
-type Page = {
+export type Page = {
     title: string
     content: string
     lastUpdated: number
@@ -12,7 +13,7 @@ function createPages() {
 
     const firebase = getFirebaseContext()
 
-    firebase.subscribeToPages(syncPage)
+    firebase.subscribeToPagesCollection(syncPage)
 
     function syncPage(id: string, type: "added" | "modified" | "removed") {
         let localPage = pages[id]
@@ -54,15 +55,13 @@ function createPages() {
         }
     }
 
-    function sanitizePage(page: any): { wasValid: boolean, sanitizedPage: Page } {
+    function sanitizePage(page: DocumentData): { wasValid: boolean, sanitizedPage: Page } {
         let wasValid = true;
         let sanitizedPage = {
             title: "New Page",
             content: "",
             lastUpdated: Date.now()
         }
-
-        if (typeof page !== "object") return { wasValid: false, sanitizedPage }
 
         if (Object.hasOwn(page, "lastUpdated") && typeof page.lastUpdated === "number") {
             sanitizedPage.lastUpdated = page.lastUpdated

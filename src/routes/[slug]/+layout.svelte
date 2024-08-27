@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { pagesState } from "$lib/State/pagesState.svelte";
-  import { appState } from "$lib/State/appState.svelte";
+  import { getAppContext } from "$lib/app.svelte";
+  import { getPagesContext } from "$lib/pages.svelte";
   import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
@@ -9,20 +9,22 @@
   let { children, data }: { children: Snippet, data: {id: string} } = $props();
 
   const id = data.id
+  const app = getAppContext();
+  const pages = getPagesContext();
 
   function redirect() {
-    if (appState.authRedirect === `${base}/${id}/`) appState.authRedirect = `${base}/`;
-    goto(appState.authRedirect);
+    if (app.authRedirect === `${base}/${id}/`) app.authRedirect = `${base}/`;
+    goto(app.authRedirect);
   }
 
   $effect(() => {
-    if (!pagesState.get()[id]) {
+    if (!pages[id]) {
       redirect();
     }
   });
 </script>
 
-{#if !pagesState.get()[id]}
+{#if !pages[id]}
   <ProgressBar />
 {:else}
     {@render children() }

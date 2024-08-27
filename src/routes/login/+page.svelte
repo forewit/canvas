@@ -1,12 +1,13 @@
 <script>
-  import { appState } from "$lib/State/appState.svelte";
+  import { getAppContext } from "$lib/app.svelte";
   import { base } from "$app/paths";
   import { goto } from "$app/navigation";
   import AuthForm from "$lib/Components/UI/AuthForm.svelte";
 
+  const app = getAppContext();
   function redirect() {
-    if (appState.authRedirect === base+"/login/") appState.authRedirect = base+"/";
-    goto(appState.authRedirect);
+    if (app.authRedirect === base+"/login/") app.authRedirect = base+"/";
+    goto(app.authRedirect);
   }
 </script>
 

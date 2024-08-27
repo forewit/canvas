@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { pagesState } from "$lib/State/pagesState.svelte.js";
+  import { getPagesContext } from "$lib/pages.svelte.js";
   import Editor from "$lib/Components/Editor/Editor.svelte";
   import { type EditorContent } from "$lib/Components/Editor/utils/editorContent.js";
 
   const { data } = $props();
-  const id = data.id;
 
-  const page = pagesState.get()[id];
+  const id = data.id;
+  const pages = getPagesContext();
+  const page = pages[id];
 
   let editorContent: EditorContent = $state({
     ops: [],

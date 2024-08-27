@@ -1,9 +1,9 @@
 <script lang="ts">
   import "quill/dist/quill.core.css";
-  import "./quill.css";
+  import "./styles/quill.css";
   import type Quill from "quill/core";
   import type { Delta } from "quill/core";
-  import { userState } from "$lib/State/userState.svelte";
+  import { getAppContext } from "$lib/app.svelte";
   import { saveContent, loadContent, type EditorContent } from "./utils/editorContent";
   import { detectAndformatLinks } from "./utils/linkFormatting";
   import { bindKeyboardShortcuts } from "./utils/keyboardShortcuts";
@@ -11,6 +11,9 @@
 
 
   const { data = $bindable() }: { data: EditorContent } = $props();
+
+  const app = getAppContext();
+
   let quill: Quill | undefined = $state();
   let quillElm: HTMLElement;
 
@@ -31,7 +34,7 @@
   // update user settings reactively
   $effect(() => {
     if (quill) {
-      quill.root.setAttribute("spellcheck", userState.get().spellcheck.toString());
+      quill.root.setAttribute("spellcheck", app.spellcheck.toString());
     }
   });
 

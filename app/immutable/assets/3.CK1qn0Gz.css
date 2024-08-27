@@ -1,0 +1,1 @@
+header.svelte-9fxzc7{display:flex;gap:var(--s);border:3px solid darkcyan}.page.svelte-9fxzc7{display:flex;align-items:center;gap:var(--s)}button.svelte-9fxzc7{background-color:var(--bg-alt);color:var(--text);padding:var(--m)}button.svelte-9fxzc7:not(:disabled):active{background-color:var(--main);color:var(--bg)}button.svelte-9fxzc7:disabled{opacity:.5}

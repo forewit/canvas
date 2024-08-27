@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { login } from "./authUtils";
-import { getFirebaseContext } from "$lib/Firebase/firebase.svelte";  
-import ProgressBar from "$lib/UI/ProgressBar.svelte";
+import { getFirebaseContext } from "$lib/firebase.svelte";  
+import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
   
   let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
 
@@ -14,7 +13,7 @@ import ProgressBar from "$lib/UI/ProgressBar.svelte";
   async function handleSubmit() {
     try {
       failedLogin = false;
-      await login(email, password);
+      await firebase.login(email, password);
       onSuccessfulLogin();
     } catch (err) {
       console.log("Login failed!");

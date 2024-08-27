@@ -6,14 +6,16 @@
   import "./styles/UIClasses.css";
   import { themes } from "./utils/themes";
   import { updateSafeAreas } from "./utils/updateSafeAreas";
-  import { userState } from "$lib/State/userState.svelte";
+  import { getAppContext } from "$lib/app.svelte";
   import { untrack, type Snippet } from "svelte";
 
   let { children }: { children: Snippet } = $props();
 
-  let theme = $derived(themes.find((t) => t.name === userState.themeName));
+  const app = getAppContext();
 
-  $effect(() => {
+  let theme = $derived(themes.find((t) => t.name === app.themeName));
+
+  $effect.pre(() => {
     const root = untrack(() => document.documentElement);
     if (theme) {
       root.style.setProperty("--bg", theme.bg);
@@ -34,9 +36,7 @@
 </script>
 
 <svelte:head>
-  {#if theme}
-    <meta name="theme-color" content={theme.bg} />
-  {/if}
+    <meta name="theme-color" content="var(--bg)" />
 </svelte:head>
 
 {@render children()}

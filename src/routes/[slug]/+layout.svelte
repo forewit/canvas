@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
   import { pagesState } from "$lib/State/pagesState.svelte";
   import { appState } from "$lib/State/appState.svelte";
-  import ProgressBar from "$lib/UI/ProgressBar.svelte";
+  import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { base } from "$app/paths";
-  import { getFirebaseContext } from "./firebase.svelte";
+  import { getFirebaseContext } from "$lib/firebase.svelte";
 
   const firebase = getFirebaseContext();
 </script>

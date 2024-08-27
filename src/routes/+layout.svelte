@@ -1,14 +1,13 @@
 <script lang="ts">
   import { onDestroy, type Snippet } from "svelte";
-  import { appState } from "$lib/State/appState.svelte";
   import { goto } from "$app/navigation";
-  import ThemeWrapper from "$lib/UI/ThemeWrapper.svelte";
-  import ProgressBar from "$lib/UI/ProgressBar.svelte";
-  import PublishingStatus from "$lib/Firebase/PublishingStatus.svelte";
+  import ThemeWrapper from "$lib/Components/Theme/ThemeWrapper.svelte";
+  import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
+  import PublishingStatus from "$lib/Components/UI/PublishingStatus.svelte";
   import { base } from "$app/paths";
-  import { setFirebaseContext } from "$lib/Firebase/firebase.svelte";
-  import { setAppContext } from "$lib/Firebase/app.svelte";
-  import { setPagesContext } from "$lib/Firebase/pages.svelte";
+  import { setFirebaseContext } from "$lib/firebase.svelte";
+  import { setAppContext } from "$lib/app.svelte";
+  import { setPagesContext } from "$lib/pages.svelte";
 
   let { children }: { children: Snippet } = $props(); 
   
@@ -17,7 +16,7 @@
   const pages = setPagesContext();
 
   $effect(() => {
-    appState.authRedirect = window.location.pathname;
+    app.authRedirect = window.location.pathname;
   });
 
   $effect(() => {

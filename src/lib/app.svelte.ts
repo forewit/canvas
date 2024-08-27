@@ -1,8 +1,9 @@
 import { getContext, setContext } from 'svelte';
-import { getFirebaseContext } from './firebase.svelte';
+import { getFirebaseContext } from '$lib/firebase.svelte';
 import { toStore } from 'svelte/store';
 
 function createApp() {
+    let authRedirect = $state("")
     let themeName = $state("Canvas")
     let spellcheck = $state(true)
     let lastUpdated = 0;
@@ -36,6 +37,8 @@ function createApp() {
 
 
     return {
+        get authRedirect() { return authRedirect },
+        set authRedirect(value) { authRedirect = value },
         get themeName() { return themeName },
         set themeName(value) {
             themeName = value

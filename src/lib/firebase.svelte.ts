@@ -1,9 +1,9 @@
-import { auth } from "$lib/Firebase/firebase.client";
-import type { User } from "firebase/auth";
+import { auth } from "$lib/scripts/firebase.client";
+import { type User, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { getContext, setContext } from 'svelte';
-import { db } from "$lib/Firebase/firebase.client";
+import { db } from "$lib/scripts/firebase.client";
 import { doc, deleteDoc, collection, onSnapshot, setDoc, updateDoc, type DocumentData } from "firebase/firestore";
-import { debounce } from "$lib/Utils/debouncing";
+import { debounce } from "$lib/scripts/utils/debouncing";
 
 const DEBOUNCE_DELAY = 1000;
 
@@ -20,6 +20,14 @@ class Firebase {
 
     constructor() {
         this.cleanupFunctions.push(auth.onAuthStateChanged(this.authChange))
+    }
+
+    async login(email: string, password: string) {
+        await signInWithEmailAndPassword(auth, email, password)
+    }
+
+    async logout() {
+        await signOut(auth)
     }
 
     destroy() {

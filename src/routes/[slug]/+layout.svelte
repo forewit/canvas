@@ -2,7 +2,7 @@
   import type { Snippet } from "svelte";
   import { getAppContext } from "$lib/app.svelte";
   import { getPagesContext } from "$lib/pages.svelte";
-  import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
+  import ProgressBar from "$lib/Components/ProgressBar.svelte";
   import { goto } from "$app/navigation";
   import { base } from "$app/paths";
 

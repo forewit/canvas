@@ -1,102 +1,121 @@
 import { getContext, setContext, untrack } from 'svelte';
 import { getFirebaseContext } from './firebase.svelte';
 import type { DocumentData } from 'firebase/firestore';
-import { toStore } from 'svelte/store';
+import { getPagesContext } from './pages.svelte';
 
 
 type Folder = {
-    title: string
-    subfolders?: Folder[],
-    ids?: string[],
+    name: string
+    subfolders?: string[],
+    pages?: string[],
 }
 
 type Directory = {
     lastUpdated: number
-    root: Folder
+    folders: Record<string, Folder>
 }
 
 function createDirectories() {
     let lastUpdated = $state(0)
-    let root: Folder = $state({ title: "root" })
-    let currentPath: string[] = $state([])
-    let currentFolder = $derived(getFolder(currentPath))
     let remoteRootUpdate = $state(true);
+    let root: Folder = $state({ name: "Home" })
+    let folders: Record<string, Folder> = $state({ "root": root })
+    let currentPath: string[] = $state(["root"])
+    let currentFolder = $derived(folders[currentPath[currentPath.length - 1]])
+
+    let orphanedFolders: string[] = $derived.by(() => {
+        let orphaned = Object.keys(folders).filter((folder) => folder !== "root");
+        let stack = ["root"];  // Initialize stack with root folder
+    
+        while (stack.length > 0) {
+            let currentFolder = stack.pop();  // Get the last folder from the stack
+            if (!currentFolder) continue;
+            let folder = folders[currentFolder];  // Access the current folder object
+    
+            if (folder.subfolders) {
+                for (let subfolder of folder.subfolders) {
+                    orphaned = orphaned.filter((orphan) => orphan !== subfolder);
+                    stack.push(subfolder);  // Add subfolders to the stack
+                }
+            }
+        }
+    
+        return orphaned;
+    })
+
+    const pages = getPagesContext()
+
+    let orphanedPages: string[] = $derived.by(() => {
+        let orphaned = Object.keys(pages)
+        let stack = ["root"];  // Initialize stack with root folder
+    
+        while (stack.length > 0) {
+            let currentFolder = stack.pop();  // Get the last folder from the stack
+            if (!currentFolder) continue;
+            let folder = folders[currentFolder];  // Access the current folder object
+    
+            if (folder.subfolders) {
+                for (let subfolder of folder.subfolders) {
+                    stack.push(subfolder);  // Add subfolders to the stack
+                }
+            }
+            if (folder.pages) {
+                for (let page of folder.pages) {
+                    orphaned = orphaned.filter((orphan) => orphan !== page);
+                }
+            }
+        }
+    
+        return orphaned;
+    })
 
     const firebase = getFirebaseContext()
-
-    function getFolder(path: string[]): Folder {
-        let folder: Folder | undefined = root
-        for (let i = 0; i < path.length; i++) {
-            folder = folder.subfolders?.find((subfolder) => subfolder.title === path[i])
-            if (folder === undefined) throw new Error("Folder does not exist")
-        }
-        return folder
-    }
 
     function sanitizeDirectory(data: DocumentData): { wasValid: boolean, sanitizedDirectory: Directory } {
         let sanitizedDirectory: Directory = {
             lastUpdated: Date.now(),
-            root: { title: "root" },
+            folders: { "root": { name: "Home" } },
         };
 
         // TODO: make more robust
         const wasValid = (Object.hasOwn(data, "lastUpdated") && typeof data.lastUpdated === "number") &&
-            (Object.hasOwn(data, "root") && typeof data.root === "object");
+            (Object.hasOwn(data, "folders") && typeof data.folders === "object");
 
         if (wasValid) {
             sanitizedDirectory.lastUpdated = data.lastUpdated
-            sanitizedDirectory.root = data.root
+            sanitizedDirectory.folders = data.folders
         }
 
         return { wasValid, sanitizedDirectory }
     }
 
-    function sanitizeFolderName(title: string, path: string[]): string {
-        let sanitizedTitle = title
-        let folder = getFolder(path)
-
-        if (!folder.subfolders) {
-            return sanitizedTitle
-        }
-
-        let i = 1;
-        while (folder.subfolders.some((subfolder) => subfolder.title === sanitizedTitle)) {
-            sanitizedTitle = `${title} (${i})`
-            i++
-        }
-
-        return sanitizedTitle
-    }
-
     function publishRootDirectory() {
-        firebase.publishDoc(["directories", "root"], { lastUpdated, root })
+        firebase.publishDoc(["directories", "root"], { lastUpdated, folders })
     }
 
     function addSubfolder(title = "New Folder") {
-        const safeTitle = sanitizeFolderName(title, currentPath)
+        const id = crypto.randomUUID().slice(0, 8)
         if (!currentFolder.subfolders) currentFolder.subfolders = []
-        currentFolder.subfolders.push({ title: safeTitle })
+        folders[id] = { name: title }
+        currentFolder.subfolders.push(id)
     }
 
-    function removeSubfolder(title: string) {
+    function removeSubfolder(id: string) {
         if (!currentFolder.subfolders) return
-        currentFolder.subfolders = currentFolder.subfolders.filter((subfolder) => subfolder.title !== title)
+        currentFolder.subfolders = currentFolder.subfolders.filter((subfolder) => subfolder !== id)
+        delete folders[id]
         if (currentFolder.subfolders.length === 0) delete currentFolder.subfolders
     }
 
     function addPageID(id: string) {
-        if (!currentFolder.ids) currentFolder.ids = []
-        currentFolder.ids.push(id)
+        if (!currentFolder.pages) currentFolder.pages = []
+        currentFolder.pages.push(id)
     }
 
-    function removeDocID(id: string) {
-        if (!currentFolder.ids) return
-        currentFolder.ids = currentFolder.ids.filter((docID) => docID !== id)
-        if (currentFolder.ids.length === 0) delete currentFolder.ids
-    }
-
-    function goto(path: string[]) {
-        currentPath = path
+    function removePageID(id: string) {
+        if (!currentFolder.pages) return
+        currentFolder.pages = currentFolder.pages.filter((docID) => docID !== id)
+        if (currentFolder.pages.length === 0) delete currentFolder.pages
     }
 
     firebase.subscribeToCollection(["directories"], (id, doc) => {
@@ -124,7 +143,7 @@ function createDirectories() {
             console.log("root directory updated")
             remoteRootUpdate = true
             lastUpdated = sanitizedDirectory.lastUpdated
-            root = sanitizedDirectory.root
+            folders = sanitizedDirectory.folders
         } else if (sanitizedDirectory.lastUpdated === lastUpdated) {
             console.log("directory synced with firebase", id)
         }
@@ -133,7 +152,7 @@ function createDirectories() {
 
     $effect(() => {
         // effect dependencies
-        JSON.stringify(root)
+        JSON.stringify(folders)
 
         untrack(() => {
             if (remoteRootUpdate) {
@@ -146,14 +165,16 @@ function createDirectories() {
     })
 
     return {
-        get root() { return root },
+        get folders() { return folders },
         get currentPath() { return currentPath },
-        get goto() { return goto },
+        set currentPath(value) { currentPath = value },
         get currentFolder() { return currentFolder },
         get addSubfolder() { return addSubfolder },
         get removeSubfolder() { return removeSubfolder },
         get addPageID() { return addPageID },
-        get removeDocID() { return removeDocID },
+        get removePageID() { return removePageID },
+        get orphanedFolders() { return orphanedFolders },
+        get orphanedPages() { return orphanedPages },
     }
 }
 

@@ -11,25 +11,13 @@
   const firebase = getFirebaseContext();
   const directory = getDirectoriesContext();
 
-  directory.currentFolder.subfolders;
-
   let currentFolderPages = $derived.by(() => {
-    if (!directory.currentFolder.ids) return [];
-    return directory.currentFolder.ids.map((id) => ({ id, page: pages[id] }));
+    return Object.keys(pages).filter(
+      (id) =>
+        directory.currentFolder.pages &&
+        directory.currentFolder.pages.includes(id)
+    );
   });
-
-  let remainingPages = $derived.by(() => {
-    let orphanedPages = [];
-
-    for (let id in pages) {
-      // if in currentFolderPages
-      if (currentFolderPages.some((page) => page.id === id)) continue;
-      orphanedPages.push({ id, page: pages[id] });
-    }
-
-    return orphanedPages;
-  })
-
 </script>
 
 <header>
@@ -73,31 +61,40 @@
   <section id="path">
     <button
       class="directory-back-button"
+      disabled={directory.currentPath.length <= 1}
       onclick={() => {
-        directory.goto(directory.currentPath.slice(0, -1));
+        if (directory.currentPath.length > 1) {
+          directory.currentPath.pop();
+        }
       }}>🔙</button
     >
-    Root/{directory.currentPath.join("/")}
+    {#each directory.currentPath as id, i}
+      <p>/</p>
+      <button
+        onclick={() =>
+          (directory.currentPath = directory.currentPath.slice(0, i + 1))}
+        >{directory.folders[id].name}</button
+      >
+    {/each}
   </section>
 
   <section id="folders">
     {#if directory.currentFolder.subfolders}
-      {#each directory.currentFolder.subfolders as subfolder}
+      {#each directory.currentFolder.subfolders as id}
         <div class="folder">
           <p>📁</p>
-          <input type="text" bind:value={subfolder.title} />
+          <input type="text" bind:value={directory.folders[id].name} />
           <button
             class="goto-folder-button"
             onclick={() => {
-              directory.currentPath.push(subfolder.title);
+              directory.currentPath.push(id);
             }}
           >
             Go
           </button>
           <button
             class="close-folder-button"
-            onclick={() => directory.removeSubfolder(subfolder.title)}
-            >❌</button
+            onclick={() => directory.removeSubfolder(id)}>❌</button
           >
         </div>
       {/each}
@@ -105,10 +102,10 @@
   </section>
 
   <section id="pages">
-    {#each currentFolderPages as {id, page}}
+    {#each currentFolderPages as id}
       <div class="page">
         <p>📄</p>
-        <input type="text" bind:value={page.title} />
+        <input type="text" bind:value={pages[id].title} />
         <button
           class="goto-page-button"
           onclick={() => goto(base + "/" + id + "/")}
@@ -118,30 +115,7 @@
         <button
           class="close-page-button"
           onclick={() => {
-            directory.removeDocID(id);
-            delete pages[id];
-          }}>❌</button
-        >
-      </div>
-    {/each}
-  </section>
-
-  <section id="remaining-pages">
-    <p>Remaining pages:</p>
-    {#each remainingPages as {id, page}}
-      <div class="page">
-        <p>📄</p>
-        <input type="text" bind:value={page.title} />
-        <button
-          class="goto-page-button"
-          onclick={() => goto(base + "/" + id + "/")}
-        >
-          Go
-        </button>
-        <button
-          class="close-page-button"
-          onclick={() => {
-            directory.removeDocID(id);
+            directory.removePageID(id);
             delete pages[id];
           }}>❌</button
         >
@@ -150,11 +124,53 @@
   </section>
 </main>
 
+<footer>
+  <section id="orphaned-folders">
+    <p>Orphaned folders:</p>
+    {#each directory.orphanedFolders as id}
+      <div class="page">
+        <p>💀📁 {directory.folders[id].name}</p>
+        <button
+          class="close-page-button"
+          onclick={() => {
+            delete directory.folders[id];
+          }}>❌</button
+        >
+      </div>
+    {/each}
+  </section>
+  <section id="orphaned-pages">
+    <p>Orphaned pages:</p>
+    {#each directory.orphanedPages as id}
+      <div class="page">
+        <p>💀📄 {pages[id].title}</p>
+        <button
+          class="close-page-button"
+          onclick={() => {
+            delete pages[id];
+          }}>❌</button
+        >
+      </div>
+    {/each}
+  </section>
+</footer>
+
 <style>
   header {
     display: flex;
     gap: var(--s);
-    border: 3px solid darkcyan;
+    margin-bottom: var(--m);
+  }
+
+  footer {
+    position: fixed;
+    bottom: 0;
+  }
+
+  #path {
+    display: flex;
+    align-items: center;
+    gap: var(--s);
   }
   .page {
     display: flex;

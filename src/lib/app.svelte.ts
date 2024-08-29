@@ -10,7 +10,6 @@ function createApp() {
     let themeName = $state("Canvas")
     let spellcheck = $state(true)
 
-
     function publishSettings() {
         firebase.publishDoc([], {lastUpdated, themeName, spellcheck})
     }

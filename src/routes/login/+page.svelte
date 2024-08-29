@@ -2,7 +2,7 @@
   import { getAppContext } from "$lib/app.svelte";
   import { base } from "$app/paths";
   import { goto } from "$app/navigation";
-  import AuthForm from "$lib/Components/UI/AuthForm.svelte";
+  import AuthForm from "$lib/Components/AuthForm.svelte";
 
   const app = getAppContext();
   function redirect() {

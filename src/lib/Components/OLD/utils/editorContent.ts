@@ -1,7 +1,7 @@
 import type Quill from "quill/core";
 import type { Op } from "quill/core";
 import { getQuillHistory, loadQuillHistory, type HistoryStack } from "./quillHistory";
-import { debounce } from "$lib/scripts/utils/debouncing";
+import { debounce } from "$lib/utils/debouncing";
 import { getFirebaseContext } from "$lib/firebase.svelte";
 
 const DEBOUNCE_DELAY = 1000;

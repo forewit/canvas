@@ -39,7 +39,6 @@ function createDirectories() {
                 }
             }
         }
-    
         return orphaned;
     })
 

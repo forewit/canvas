@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { onDestroy, type Snippet } from "svelte";
+  import { onMount, type Snippet } from "svelte";
   import { goto } from "$app/navigation";
-  import ThemeWrapper from "$lib/Components/Theme/ThemeWrapper.svelte";
-  import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
-  import PublishingStatus from "$lib/Components/UI/PublishingStatus.svelte";
+  import ThemeWrapper from "$lib/Components/ThemeWrapper/ThemeWrapper.svelte";
+  import ProgressBar from "$lib/Components/ProgressBar.svelte";
+  import PublishingStatus from "$lib/Components/PublishingStatus.svelte";
   import { base } from "$app/paths";
   import { setFirebaseContext } from "$lib/firebase.svelte";
   import { setAppContext } from "$lib/app.svelte";
@@ -13,8 +13,8 @@
   let { children }: { children: Snippet } = $props(); 
   
   const firebase = setFirebaseContext();
-  setPagesContext();
-  setDirectoriesContext();
+  const pages = setPagesContext();
+  const directories = setDirectoriesContext();
   const app = setAppContext();
 
   $effect(() => {
@@ -27,8 +27,14 @@
     }
   });
 
-  onDestroy(() => {
-    firebase.destroy();
+  onMount(() => {
+    window.addEventListener("beforeunload", (e) => {
+      if (firebase.isPublishing) e.preventDefault();
+    });
+
+    return () => {
+      firebase.destroy();
+    }
   })
 </script>
 

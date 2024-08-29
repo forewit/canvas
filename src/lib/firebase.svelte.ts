@@ -1,10 +1,8 @@
-import { auth } from "$lib/scripts/firebase.client";
+import { auth, db } from "$lib/firebase.client";
 import { type User, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { doc, deleteDoc, collection, onSnapshot, setDoc, type DocumentData } from "firebase/firestore";
+import { debounce } from "$lib/utils/debouncing";
 import { getContext, setContext } from 'svelte';
-import { db } from "$lib/scripts/firebase.client";
-import { doc, deleteDoc, collection, onSnapshot, setDoc, updateDoc, type DocumentData } from "firebase/firestore";
-import { debounce } from "$lib/scripts/utils/debouncing";
-
 
 function createFirebase() {
     const DEBOUNCE_DELAY = 1000;

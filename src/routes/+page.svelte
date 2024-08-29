@@ -22,20 +22,6 @@
 
 <header>
   <button
-    class="logout-button"
-    onclick={() => {
-      firebase.logout();
-    }}>Logout</button
-  >
-
-  <button
-    class="spellcheck-button"
-    onclick={() => {
-      app.spellcheck = !app.spellcheck;
-    }}>Spellcheck: {app.spellcheck}</button
-  >
-
-  <button
     class="new-page-button"
     onclick={() => {
       const id = crypto.randomUUID().slice(0, 8);
@@ -55,6 +41,10 @@
       directory.addSubfolder();
     }}>+📁</button
   >
+
+  <a href="{base}/profile">
+    <button class="profile-button">Profile</button>
+  </a>
 </header>
 
 <main>
@@ -156,6 +146,7 @@
 <style>
   header {
     display: flex;
+    align-items: center;
     gap: var(--s);
     margin-bottom: var(--m);
   }

@@ -11,7 +11,25 @@
   const firebase = getFirebaseContext();
   const directory = getDirectoriesContext();
 
-  let directoryString = $derived(JSON.stringify(directory.root));
+  directory.currentFolder.subfolders;
+
+  let currentFolderPages = $derived.by(() => {
+    if (!directory.currentFolder.ids) return [];
+    return directory.currentFolder.ids.map((id) => ({ id, page: pages[id] }));
+  });
+
+  let remainingPages = $derived.by(() => {
+    let orphanedPages = [];
+
+    for (let id in pages) {
+      // if in currentFolderPages
+      if (currentFolderPages.some((page) => page.id === id)) continue;
+      orphanedPages.push({ id, page: pages[id] });
+    }
+
+    return orphanedPages;
+  })
+
 </script>
 
 <header>
@@ -39,41 +57,97 @@
         lastUpdated: Date.now(),
       };
       pages[id] = page;
+      directory.addPageID(id);
     }}>+📄</button
   >
 
   <button
-  class="new-folder-button"
-  onclick={() => {
-    directory.newFolder();
-  }}>+📁</button
->
-
+    class="new-folder-button"
+    onclick={() => {
+      directory.addSubfolder();
+    }}>+📁</button
+  >
 </header>
 
 <main>
-  
+  <section id="path">
+    <button
+      class="directory-back-button"
+      onclick={() => {
+        directory.goto(directory.currentPath.slice(0, -1));
+      }}>🔙</button
+    >
+    Root/{directory.currentPath.join("/")}
+  </section>
 
-<section id="pages">
-  {#each Object.entries(pages) as [id, page]}
-    <div class="page">
-      <p>📄</p>
-      <input type="text" bind:value={page.title} />
-      <button
-        class="goto-page-button"
-        onclick={() => goto(base + "/" + id + "/")}
-      >
-        Go
-      </button>
-      <button
-        class="close-page-button"
-        onclick={() => delete pages[id]}>❌</button
-      >
-    </div>
-  {/each}
-</section>
+  <section id="folders">
+    {#if directory.currentFolder.subfolders}
+      {#each directory.currentFolder.subfolders as subfolder}
+        <div class="folder">
+          <p>📁</p>
+          <input type="text" bind:value={subfolder.title} />
+          <button
+            class="goto-folder-button"
+            onclick={() => {
+              directory.currentPath.push(subfolder.title);
+            }}
+          >
+            Go
+          </button>
+          <button
+            class="close-folder-button"
+            onclick={() => directory.removeSubfolder(subfolder.title)}
+            >❌</button
+          >
+        </div>
+      {/each}
+    {/if}
+  </section>
 
-<p>📁 {directoryString}</p>
+  <section id="pages">
+    {#each currentFolderPages as {id, page}}
+      <div class="page">
+        <p>📄</p>
+        <input type="text" bind:value={page.title} />
+        <button
+          class="goto-page-button"
+          onclick={() => goto(base + "/" + id + "/")}
+        >
+          Go
+        </button>
+        <button
+          class="close-page-button"
+          onclick={() => {
+            directory.removeDocID(id);
+            delete pages[id];
+          }}>❌</button
+        >
+      </div>
+    {/each}
+  </section>
+
+  <section id="remaining-pages">
+    <p>Remaining pages:</p>
+    {#each remainingPages as {id, page}}
+      <div class="page">
+        <p>📄</p>
+        <input type="text" bind:value={page.title} />
+        <button
+          class="goto-page-button"
+          onclick={() => goto(base + "/" + id + "/")}
+        >
+          Go
+        </button>
+        <button
+          class="close-page-button"
+          onclick={() => {
+            directory.removeDocID(id);
+            delete pages[id];
+          }}>❌</button
+        >
+      </div>
+    {/each}
+  </section>
 </main>
 
 <style>
@@ -83,6 +157,12 @@
     border: 3px solid darkcyan;
   }
   .page {
+    display: flex;
+    align-items: center;
+    gap: var(--s);
+  }
+
+  .folder {
     display: flex;
     align-items: center;
     gap: var(--s);

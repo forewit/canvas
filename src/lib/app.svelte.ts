@@ -1,6 +1,6 @@
-import { getContext, setContext, untrack } from 'svelte';
+import { getContext, setContext } from 'svelte';
 import { getFirebaseContext } from '$lib/firebase.svelte';
-import { toStore } from 'svelte/store';
+import type { DocumentData } from 'firebase/firestore';
 
 function createApp() {
     const firebase = getFirebaseContext()
@@ -11,31 +11,25 @@ function createApp() {
     let spellcheck = $state(true)
 
 
-    function publishToFirebase() {
-        firebase.publishDataToUserDoc({
-            lastUpdated,
-            themeName,
-            spellcheck,
-        })
+    function publishSettings() {
+        firebase.publishDoc([], {lastUpdated, themeName, spellcheck})
     }
 
-    function importFromFirebase(data: any) {
+    function ImportSettings(data: DocumentData) {
         if (Object.hasOwn(data, "themeName") && typeof data.themeName === "string") themeName = data.themeName
         if (Object.hasOwn(data, "spellcheck") && typeof data.spellcheck === "boolean") spellcheck = data.spellcheck
     }
 
-    let userDocStore = toStore(() => firebase.userDoc)
-    userDocStore.subscribe((userDoc) => {
-        if (firebase.isLoading) return
-        if (userDoc.lastUpdated === undefined || userDoc.lastUpdated < lastUpdated) {
-            publishToFirebase()
-        } else if (userDoc.lastUpdated > lastUpdated) {
-            importFromFirebase(userDoc)
-        } else if (userDoc.lastUpdated === lastUpdated) {
+    firebase.subscribeToDoc([], (id, doc) => {
+        if (firebase.isLoading || doc === null) return
+        if (doc.lastUpdated === undefined || doc.lastUpdated < lastUpdated) {
+            publishSettings()
+        } else if (doc.lastUpdated > lastUpdated) {
+            ImportSettings(doc)
+        } else if (doc.lastUpdated === lastUpdated) {
             console.log("app in sync with user doc")
         }
     })
-
 
     return {
         get authRedirect() { return authRedirect },
@@ -44,13 +38,13 @@ function createApp() {
         set themeName(value) {
             themeName = value
             lastUpdated = Date.now()
-            publishToFirebase()
+            publishSettings()
         },
         get spellcheck() { return spellcheck },
         set spellcheck(value) {
             spellcheck = value
             lastUpdated = Date.now()
-            publishToFirebase()
+            publishSettings()
         },
     }
 }

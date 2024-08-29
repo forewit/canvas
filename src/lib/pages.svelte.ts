@@ -13,72 +13,54 @@ function createPages() {
 
     const firebase = getFirebaseContext()
 
-    firebase.subscribeToPagesCollection(syncPage)
+    firebase.subscribeToCollection(["pages"], syncPage)
 
-    function syncPage(id: string, type: "added" | "modified" | "removed") {
+    function syncPage(id: string, doc: DocumentData | null) {
         let localPage = pages[id]
-        let firebasePage = firebase.pagesCollection[id]
-
         // page was removed from firebase
-        if (type === "removed") {
+        if (!doc) {
             if (localPage) delete pages[id]
             console.log("deleted page", id.slice(0, 4))
             return;
         }
 
-        // the page is still being published to firebase
-        if (!firebasePage) {
-            firebase.publishDataToPageDoc(id, localPage)
-            return;
-        }
-
-        let { wasValid, sanitizedPage } = sanitizePage(firebasePage)
+        let { wasValid, sanitizedPage } = sanitizePage(doc)
 
         if (!wasValid) {
-            console.warn("Sanitized invalid page", firebasePage, sanitizedPage)
-            firebase.publishDataToPageDoc(id, sanitizedPage)
+            console.warn("Ignoring invalid page", doc)
             return;
         }
 
         if (!localPage) {
             pages[id] = setupPage(id, sanitizedPage)
-            console.log("added page", id.slice(0, 4))
+            console.log("added page", id)
             return;
         }
 
         if (sanitizedPage.lastUpdated < localPage.lastUpdated) {
-            firebase.publishDataToPageDoc(id, localPage)
+            firebase.publishDoc(["pages", id], localPage)
         } else if (sanitizedPage.lastUpdated > localPage.lastUpdated) {
             pages[id] = setupPage(id, sanitizedPage)
         } else if (sanitizedPage.lastUpdated === localPage.lastUpdated) {
-            console.log("page synced with firebase", id.slice(0, 4))
+            console.log("page synced with firebase", id)
         }
     }
 
     function sanitizePage(page: DocumentData): { wasValid: boolean, sanitizedPage: Page } {
-        let wasValid = true;
         let sanitizedPage = {
             title: "New Page",
             content: "",
             lastUpdated: Date.now()
         }
 
-        if (Object.hasOwn(page, "lastUpdated") && typeof page.lastUpdated === "number") {
+        const wasValid = (Object.hasOwn(page, "lastUpdated") && typeof page.lastUpdated === "number") &&
+            (Object.hasOwn(page, "title") && typeof page.title === "string") &&
+            (Object.hasOwn(page, "content") && typeof page.content === "string");
+
+        if (wasValid) {
             sanitizedPage.lastUpdated = page.lastUpdated
-        } else {
-            wasValid = false
-        }
-
-        if (Object.hasOwn(page, "title") && typeof page.title === "string") {
             sanitizedPage.title = page.title
-        } else {
-            wasValid = false
-        }
-
-        if (Object.hasOwn(page, "content") && typeof page.content === "string") {
             sanitizedPage.content = page.content
-        } else {
-            wasValid = false
         }
 
         return { wasValid, sanitizedPage }
@@ -97,14 +79,14 @@ function createPages() {
                 if (value === title) return;
                 title = value;
                 lastUpdated = Date.now();
-                syncPage(id, "modified");
+                firebase.publishDoc(["pages", id], pages[id])
             },
             get content() { return content },
             set content(value) {
                 if (value === content) return
                 content = value
                 lastUpdated = Date.now()
-                syncPage(id, "modified")
+                firebase.publishDoc(["pages", id], pages[id])
             }
         }
     }
@@ -112,12 +94,12 @@ function createPages() {
     const pagesProxy = new Proxy(pages, {
         set: (target, prop: string, value) => {
             target[prop] = setupPage(prop, value)
-            firebase.publishDataToPageDoc(prop, value)
+            firebase.publishDoc(["pages", prop], value)
             return true
         },
         deleteProperty: (target, prop: string) => {
             delete target[prop]
-            firebase.publishDataToPageDoc(prop)
+            firebase.publishDoc(["pages", prop], null)
             return true;
         },
     })

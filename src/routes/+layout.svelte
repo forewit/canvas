@@ -13,8 +13,8 @@
   let { children }: { children: Snippet } = $props(); 
   
   const firebase = setFirebaseContext();
-  const pages = setPagesContext();
-  const directory = setDirectoriesContext();
+  setPagesContext();
+  setDirectoriesContext();
   const app = setAppContext();
 
   $effect(() => {

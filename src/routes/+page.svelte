@@ -88,10 +88,8 @@
             class="goto-folder-button"
             onclick={() => {
               directory.currentPath.push(id);
-            }}
+            }}>Go</button
           >
-            Go
-          </button>
           <button
             class="close-folder-button"
             onclick={() => directory.removeSubfolder(id)}>❌</button

@@ -1,40 +1,19 @@
 <script lang="ts">
   import { getPagesContext } from "$lib/pages.svelte.js";
-  import Editor from "$lib/Components/Editor/Editor.svelte";
-  import { type EditorContent } from "$lib/Components/Editor/utils/editorContent.js";
 
-  const { data } = $props();
+  const { data }: { data: { id: string } } = $props();
 
   const id = data.id;
   const pages = getPagesContext();
   const page = pages[id];
-
-  let editorContent: EditorContent = $state({
-    ops: [],
-    history: {
-      undo: [],
-      redo: [],
-    },
-  });
 </script>
 
-<div class="page-container">
   <header>
     <button class="back-button" onclick={() => history.back()}>Back</button>
-    <input bind:value={page.title}/>
+    <input bind:value={page.title} />
   </header>
 
-  <section>
-    <Editor bind:data={editorContent} />
-  </section>
-</div>
-
 <style>
-  .page-container {
-    display: grid;
-    grid-auto-rows: min-content 1fr;
-    height: 100%;
-  }
   header {
     display: flex;
     align-items: center;
@@ -51,5 +30,4 @@
     background-color: var(--main);
     color: var(--bg);
   }
-
 </style>

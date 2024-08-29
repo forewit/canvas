@@ -1,0 +1,1 @@
+header.svelte-16cublx{display:flex;gap:var(--s);border:3px solid darkcyan}.page.svelte-16cublx,.folder.svelte-16cublx{display:flex;align-items:center;gap:var(--s)}button.svelte-16cublx{background-color:var(--bg-alt);color:var(--text);padding:var(--m)}button.svelte-16cublx:not(:disabled):active{background-color:var(--main);color:var(--bg)}button.svelte-16cublx:disabled{opacity:.5}

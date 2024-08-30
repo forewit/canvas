@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { type Snippet } from "svelte";
+  import { type Snippet } from "svelte";
 
-    let { children, onclick }: { children: Snippet, onclick: () => void } = $props();
-
+  let { children, onclick }: { children: Snippet; onclick?: () => void } =
+    $props();
 </script>
 
 <button {onclick}>
@@ -11,6 +11,7 @@
 
 <style>
   button {
+    outline-color: var(--main);
     background-color: var(--bg-alt);
     color: var(--text);
     padding: var(--m);
@@ -21,5 +22,4 @@
     background-color: var(--main);
     color: var(--bg);
   }
-
 </style>

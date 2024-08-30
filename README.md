@@ -5,6 +5,14 @@ Icons:
 https://www.svgrepo.com/collection/wolf-kit-solid-glyph-icons/
 
 ## Initial Setup
+
+### keep NPM packages up to date
+```bash
+npm install -g npm-check-updates
+ncu -u
+npm install
+```
+
 #### Setup svelte static site
 1. install svelte and the static adapter
 ```bash

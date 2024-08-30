@@ -6,16 +6,18 @@ function createApp() {
     const firebase = getFirebaseContext()
 
     let lastUpdated = 0;
+    let username = $state("")
     let authRedirect = $state("")
-    let themeName = $state("Canvas")
+    let theme = $state("Canvas")
     let spellcheck = $state(true)
 
     function publishSettings() {
-        firebase.publishDoc([], {lastUpdated, themeName, spellcheck})
+        firebase.publishDoc([], {lastUpdated, theme: theme, spellcheck, username})
     }
 
     function ImportSettings(data: DocumentData) {
-        if (Object.hasOwn(data, "themeName") && typeof data.themeName === "string") themeName = data.themeName
+        if (Object.hasOwn(data, "username") && typeof data.username === "string") username = data.username
+        if (Object.hasOwn(data, "theme") && typeof data.theme === "string") theme = data.theme
         if (Object.hasOwn(data, "spellcheck") && typeof data.spellcheck === "boolean") spellcheck = data.spellcheck
     }
 
@@ -33,9 +35,15 @@ function createApp() {
     return {
         get authRedirect() { return authRedirect },
         set authRedirect(value) { authRedirect = value },
-        get themeName() { return themeName },
-        set themeName(value) {
-            themeName = value
+        get username() { return username },
+        set username(value) {
+            username = value
+            lastUpdated = Date.now()
+            publishSettings()
+        },
+        get theme() { return theme },
+        set theme(value) {
+            theme = value
             lastUpdated = Date.now()
             publishSettings()
         },

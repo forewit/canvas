@@ -1,47 +1,33 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { getFirebaseContext } from "$lib/firebase.svelte";
+  import Icon from "$lib/Components/Icon.svelte";
 
   const firebase = getFirebaseContext();
 </script>
 
-<div
-  class="status"
-  class:saving={firebase.isPublishing}
-  class:saved={!firebase.isPublishing && !firebase.isLoading}
->
-  <span
-    class="status-icon"
-    style="-webkit-mask: url({base}/images/icons/double-checkmark.svg) no-repeat center / contain;
-        mask: url({base}/images/icons/double-checkmark.svg) no-repeat center / contain;"
-  ></span>
-</div>
+{#if !firebase.isLoading}
+  {#if firebase.isPublishing}
+    <div class="spinner">
+      <span></span>
+    </div>
+  {:else}
+    <Icon url="{base}/images/icons/double-checkmark.svg" size="1.2em"/>
+  {/if}
+{/if}
 
 <style>
-  .status {
-    width: 1rem;
-    aspect-ratio: 1;
-
+  .spinner {
+    width: 1.2em;
+    height: 1.2em;
     display: flex;
     justify-content: center;
     align-items: center;
-    opacity: 0;
   }
-  .status.saved,
-  .status.saving {
-    opacity: 1;
-  }
-  .status-icon {
-    background-color: var(--main);
-    width: 100%;
-    aspect-ratio: 1;
-  }
-  .saving .status-icon {
-    mask: none !important;
-    -webkit-mask: none !important;
+  .spinner span {
     background-color: transparent;
-
     width: 90%;
+    aspect-ratio: 1;
     border-radius: 50%;
     border: 2px solid var(--bg-alt);
     border-right-color: var(--main);

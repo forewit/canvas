@@ -42,6 +42,7 @@
 
 * {
   font-family: "Selawik";
+  color: var(--text);
 }
 button {
   -webkit-tap-highlight-color: transparent;
@@ -54,6 +55,26 @@ html {
   overscroll-behavior: none;
 }
 
+h1, h2, h3 {
+  color: var(--sub);
+}
+
+h1 {
+  font-size: 1.5em;
+  margin-bottom: var(--l);
+  margin-top: var(--xl);
+}
+
+h2 {
+  font-size: 1.2em;
+  margin-bottom: var(--m);
+  margin-top: var(--l);
+}
+
+h3 {
+  font-size: 1em;
+}
+
 ::selection {
   background-color: var(--sub);
   color: var(--bg);
@@ -64,3 +85,5 @@ html {
   padding: var(--m);
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
 }
+
+

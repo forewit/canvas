@@ -2,24 +2,118 @@
   import { getAppContext } from "$lib/app.svelte";
   import { getFirebaseContext } from "$lib/firebase.svelte";
   import { base } from "$app/paths";
+  import { themes } from "$lib/Components/ThemeWrapper/themes.svelte";
   import Button from "$lib/Components/Button.svelte";
+  import TextInput from "$lib/Components/TextInput.svelte";
+  import Toggle from "$lib/Components/Toggle.svelte";
+  import Icon from "$lib/Components/Icon.svelte";
 
   const firebase = getFirebaseContext();
   const app = getAppContext();
 </script>
 
-<h1>Profile</h1>
+<header>
+  <a class="home" href="{base}/"
+    ><Button variant="alt" iconURL="{base}/images/icons/home.svg">Home</Button></a
+  >
+</header>
 
-<a href="{base}/"><Button>🏠Home</Button></a>
+<main>
+  <section>
+    <h1>Settings</h1>
+    <div class="settings-block">
+      <div class="settings-option">
+        <Toggle bind:checked={app.spellcheck} />
+        <p>Spellcheck</p>
+      </div>
+    </div>
+  </section>
 
-<Button
-  onclick={() => {
-    firebase.logout();
-  }}>Logout</Button
->
+  <section>
+    <h1>Theme</h1>
+    <div class="theme-grid">
+      {#each themes as theme}
+        <Button
+          {theme}
+          onclick={() => (app.theme = theme.name)}
+          selected={app.theme === theme.name}>{theme.name}</Button
+        >
+      {/each}
+    </div>
+  </section>
 
-<Button
-  onclick={() => {
-    app.spellcheck = !app.spellcheck;
-  }}>Spellcheck: {app.spellcheck}</Button
->
+  <section>
+    <h1>Profile</h1>
+
+    <div class="settings-block">
+      <div class="settings-option">
+        <h3>Username:</h3>
+        <TextInput bind:value={app.username} />
+      </div>
+      <div class="settings-option">
+        <h3>Email:</h3>
+        <p>{firebase.user?.email}</p>
+      </div>
+      <br />
+      <div class="logout">
+        <Button
+          iconURL="{base}/images/icons/logout.svg"
+          variant="error"
+          onclick={() => {
+            firebase.logout();
+          }}>Logout</Button
+        >
+      </div>
+    </div>
+  </section>
+</main>
+
+<style>
+  main {
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    padding-inline: var(--l);
+    margin-inline: auto;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    padding-block: var(--m);
+    padding-inline: calc(var(--safe-area-inline) + var(--m));
+    background-color: var(--bg-alt);
+  }
+  section {
+    padding-bottom: var(--l);
+  }
+
+  a.home {
+    display: block;
+    width: max-content;
+  }
+
+  .theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--m);
+  }
+
+  .settings-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--m);
+  }
+
+  .settings-option {
+    display: flex;
+    align-items: center;
+    gap: var(--m);
+  }
+
+  .logout {
+    display: flex;
+    justify-content: flex-end;
+  }
+</style>

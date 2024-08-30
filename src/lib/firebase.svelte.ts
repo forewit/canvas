@@ -87,28 +87,27 @@ function createFirebase() {
         await signOut(auth)
     }
 
-    function authChange(currentUser: User | null) {
+    const unsubAuth = auth.onAuthStateChanged((currentUser) => {
         user = currentUser
         isLoading = false
 
-        if (currentUser) {
-            console.warn("Logged in, subscribing to docs");
-            pendingSubscriptions.forEach(fn => fn())
-            pendingSubscriptions = []
-        } else {
+        if (currentUser === null) {
             console.warn("Logged out, unsubscribing from docs");
             cleanupFunctions.forEach((unsub) => unsub())
             cleanupFunctions = []
+        } else {
+            console.warn("Logged in, subscribing to docs");
+            pendingSubscriptions.forEach(fn => fn())
+            pendingSubscriptions = []
         }
-    }
+    })
 
     function destroy() {
         console.warn("Closing Firebase");
         cleanupFunctions.forEach((unsub) => unsub())
         cleanupFunctions = []
+        unsubAuth()
     }
-
-    cleanupFunctions.push(auth.onAuthStateChanged(authChange))
 
     return {
         get user() { return user },

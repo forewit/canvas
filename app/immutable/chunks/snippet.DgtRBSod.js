@@ -1,1 +1,0 @@
-import{i as n,E as f,t as o,v as p,j as c,o as d}from"./runtime.Cnk7LXRW.js";function v(e,s,...i){var t=e,a,r;n(()=>{a!==(a=s())&&(r&&(p(r),r=null),a&&(r=o(()=>a(t,...i))))},f),c&&(t=d)}export{v as s};

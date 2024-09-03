@@ -8,13 +8,13 @@
   import { setFirebaseContext } from "$lib/firebase.svelte";
   import { setAppContext } from "$lib/app.svelte";
   import { setPagesContext } from "$lib/pages.svelte";
-  import { setDirectoriesContext } from "$lib/directories.svelte";
+  import { setDirectoryContext } from "$lib/directories.svelte";
 
   let { children }: { children: Snippet } = $props(); 
   
   const firebase = setFirebaseContext();
   const pages = setPagesContext();
-  const directories = setDirectoriesContext();
+  const directories = setDirectoryContext();
   const app = setAppContext();
 
   $effect(() => {

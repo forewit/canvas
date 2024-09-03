@@ -73,6 +73,7 @@ h2 {
 
 h3 {
   font-size: 1em;
+  margin-top: var(--l)
 }
 
 ::selection {

@@ -10,6 +10,8 @@ function createApp() {
     let authRedirect = $state("")
     let theme = $state("Canvas")
     let spellcheck = $state(true)
+    let showFolderPreview = $state(true)
+    let showFolderName = $state(true)
 
     function publishSettings() {
         firebase.publishDoc([], {lastUpdated, theme: theme, spellcheck, username})
@@ -19,6 +21,8 @@ function createApp() {
         if (Object.hasOwn(data, "username") && typeof data.username === "string") username = data.username
         if (Object.hasOwn(data, "theme") && typeof data.theme === "string") theme = data.theme
         if (Object.hasOwn(data, "spellcheck") && typeof data.spellcheck === "boolean") spellcheck = data.spellcheck
+        if (Object.hasOwn(data, "showFolderPreview") && typeof data.showFolderPreview === "boolean") showFolderPreview = data.showFolderPreview
+        if (Object.hasOwn(data, "showFolderName") && typeof data.showFolderName === "boolean") showFolderName = data.showFolderName
     }
 
     firebase.subscribeToDoc([], (id, doc) => {
@@ -53,6 +57,18 @@ function createApp() {
             lastUpdated = Date.now()
             publishSettings()
         },
+        get showFolderPreview() { return showFolderPreview },
+        set showFolderPreview(value) {
+            showFolderPreview = value
+            lastUpdated = Date.now()
+            publishSettings()
+        },
+        get showFolderName() { return showFolderName },
+        set showFolderName(value) {
+            showFolderName = value
+            lastUpdated = Date.now()
+            publishSettings()
+        }
     }
 }
 

@@ -7,6 +7,7 @@
   import TextInput from "$lib/Components/TextInput.svelte";
   import Toggle from "$lib/Components/Toggle.svelte";
   import Icon from "$lib/Components/Icon.svelte";
+  import Folder from "$lib/Components/Folder.svelte";
 
   const firebase = getFirebaseContext();
   const app = getAppContext();
@@ -14,7 +15,8 @@
 
 <header>
   <a class="home" href="{base}/"
-    ><Button variant="alt" iconURL="{base}/images/icons/home.svg">Home</Button></a
+    ><Button variant="alt" iconURL="{base}/images/icons/home.svg">Home</Button
+    ></a
   >
 </header>
 
@@ -22,15 +24,50 @@
   <section>
     <h1>Settings</h1>
     <div class="settings-block">
+      <label class="settings-option" for="spellcheck" style="cursor: pointer">
+        <Toggle bind:checked={app.spellcheck} id="spellcheck" />
+        <p class:disabled={!app.spellcheck}>Spellcheck</p>
+      </label>
+      <h3>Appearance</h3>
       <div class="settings-option">
-        <Toggle bind:checked={app.spellcheck} />
-        <p>Spellcheck</p>
+        <div class="settings-block">
+          <label
+            class="settings-option"
+            for="showFolderName"
+            style="cursor: pointer"
+          >
+            <Toggle bind:checked={app.showFolderName} id="showFolderName" />
+            <p class:disabled={!app.showFolderName}>Show folder names</p>
+          </label>
+          <label
+            class="settings-option"
+            for="showFolderPreview"
+            style="cursor: pointer"
+          >
+            <Toggle
+              bind:checked={app.showFolderPreview}
+              id="showFolderPreview"
+            />
+            <p class:disabled={!app.showFolderPreview}>Show folder previews</p>
+          </label>
+        </div>
+        <div style="margin-left: var(--l)">
+          <Folder
+            folder={{
+              name: "Example",
+              pages: [""],
+              subfolders: ["", ""],
+              color: "var(--main)",
+            }}
+          />
+        </div>
       </div>
     </div>
   </section>
 
   <section>
     <h1>Theme</h1>
+
     <div class="theme-grid">
       {#each themes as theme}
         <Button
@@ -108,6 +145,7 @@
 
   .settings-option {
     display: flex;
+    width: fit-content;
     align-items: center;
     gap: var(--m);
   }
@@ -115,5 +153,9 @@
   .logout {
     display: flex;
     justify-content: flex-end;
+  }
+
+  .disabled {
+    opacity: 0.5;
   }
 </style>

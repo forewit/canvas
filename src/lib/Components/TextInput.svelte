@@ -5,6 +5,7 @@
     oninput?: () => void;
     disabled?: boolean;
     variant?: "alt";
+    name?: string;
   };
 
   let {
@@ -12,6 +13,7 @@
     value = $bindable(),
     oninput = () => {},
     disabled = false,
+    name = "",
     variant,
   }: props = $props();
 </script>
@@ -21,6 +23,7 @@
   {oninput}
   {placeholder}
   {disabled}
+  {name}
   bind:value
   spellcheck="false"
   class:alt={variant === "alt"}
@@ -28,12 +31,14 @@
 
 <style>
   input {
+    height: auto;
     outline: none;
-    outline-offset: -2px;
+    outline-offset: calc(-1 * var(--xs));
     border: none;
     background-color: var(--bg-alt);
     color: var(--text);
-    padding: var(--m);
+    padding-inline: var(--m);
+  padding-block: var(--s);
     border-radius: var(--s);
   }
   input.alt {
@@ -41,10 +46,11 @@
   }
 
   input:focus {
-    outline: var(--main) solid 2px;
+    outline: var(--main) solid var(--xs);
+
   }
   input:invalid {
-    outline: var(--error) solid 2px;
+    outline: var(--error) solid var(--xs);
     color: var(--error);
   }
 </style>

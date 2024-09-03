@@ -1,12 +1,13 @@
 <script lang="ts">
     type Props = {
-        checked: boolean;
+        checked?: boolean;
+        id?: string;
     }
 
-    let { checked = $bindable() }: Props = $props();
+    let { checked = $bindable(true), id }: Props = $props();
 </script>
 
-<input type="checkbox" bind:checked />
+<input type="checkbox" {id} bind:checked />
 
 <style>
     input {

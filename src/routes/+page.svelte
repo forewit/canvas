@@ -4,14 +4,16 @@
   import { getAppContext } from "$lib/app.svelte";
   import { getPagesContext } from "$lib/pages.svelte";
   import { getFirebaseContext } from "$lib/firebase.svelte";
-  import { getDirectoriesContext } from "$lib/directories.svelte";
+  import { getDirectoryContext } from "$lib/directories.svelte";
   import Button from "$lib/Components/Button.svelte";
   import TextInput from "$lib/Components/TextInput.svelte";
+  import Folder from "$lib/Components/Folder.svelte";
+  import Page from "$lib/Components/Page.svelte";
 
   const app = getAppContext();
   const pages = getPagesContext();
   const firebase = getFirebaseContext();
-  const directory = getDirectoriesContext();
+  const directory = getDirectoryContext();
 
   let currentFolderPages = $derived.by(() => {
     return Object.keys(pages).filter(
@@ -24,7 +26,7 @@
   function createPage() {
     const id = crypto.randomUUID().slice(0, 8);
     const page = {
-      title: "New Page",
+      title: "Untitled",
       content: "",
       lastUpdated: Date.now(),
     };
@@ -47,63 +49,67 @@
 
     {#each directory.currentPath as id, i}
       <p>/</p>
-      <Button
-        variant="alt"
-        onclick={() =>
-          (directory.currentPath = directory.currentPath.slice(0, i + 1))}
-        >{directory.folders[id].name}</Button
-      >
+      {#if i === directory.currentPath.length - 1}
+        <TextInput
+          bind:value={directory.folders[id].name}
+          placeholder="Untitled"
+        />
+      {:else}
+        <Button
+          variant="alt"
+          onclick={() =>
+            (directory.currentPath = directory.currentPath.slice(0, i + 1))}
+          >{directory.folders[id].name}</Button
+        >
+      {/if}
     {/each}
+    {#if directory.currentPath.length > 1}
+      <Button
+        variant="error"
+        iconURL="{base}/images/icons/xmark-small.svg"
+        onclick={() => {
+          const id = directory.currentPath.pop();
+          if (id) directory.removeSubfolder(id);
+        }}
+      />
+    {/if}
   </div>
+
   <a class="profile" href="{base}/profile"
     ><Button variant="alt" iconURL="{base}/images/icons/gear.svg"></Button></a
   >
 </header>
 
 <main>
-  <section class="items">
+  <section id="folders">
     {#if directory.currentFolder.subfolders}
       {#each directory.currentFolder.subfolders as id}
-        <div class="item">
-          <Button variant="alt" onclick={() => directory.currentPath.push(id)}
-            >📂</Button
-          >
-          <TextInput variant="alt" bind:value={directory.folders[id].name} />
-
-          <Button
-            variant="alt"
-            iconURL="{base}/images/icons/xmark-small.svg"
-            onclick={() => directory.removeSubfolder(id)}
-          />
-        </div>
+        <Folder
+          folder={directory.folders[id]}
+          onclick={() => directory.currentPath.push(id)}
+        />
       {/each}
     {/if}
-    {#each currentFolderPages as id}
-      <div class="item">
-        <Button variant="alt" onclick={() => goto(base + "/" + id + "/")}
-          >📄</Button
-        >
-        <TextInput variant="alt" bind:value={pages[id].title} />
-
-        <Button
-          variant="alt"
-          iconURL="{base}/images/icons/xmark-small.svg"
-          onclick={() => {
-            directory.removePageID(id);
-            delete pages[id];
-          }}
-        />
-      </div>
-    {/each}
+    <div id="add-folder">
+      <Button
+        iconURL="{base}/images/icons/plus.svg"
+        onclick={() => directory.addSubfolder()}
+      ></Button>
+    </div>
   </section>
-  <section class="buttons">
-    <Button onclick={() => directory.addSubfolder()}>+📂</Button>
-    <Button
-      onclick={() => {
-        const id = createPage();
-        directory.addPageID(id);
-      }}>+📄</Button
-    >
+  <section id="pages">
+    {#each currentFolderPages as id}
+      <Page page={pages[id]} onclick={() => goto(base + "/" + id + "/")} />
+    {/each}
+    <div id="add-page">
+      <Button
+        iconURL="{base}/images/icons/plus.svg"
+        onclick={() => {
+          const id = createPage();
+          directory.addPageID(id);
+        }}
+      />
+    </div>
   </section>
 </main>
 
@@ -111,29 +117,27 @@
   <section id="orphaned-folders">
     <p>Orphaned folders:</p>
     {#each directory.orphanedFolders as id}
-      <div class="page">
-        <p>💀📁 {directory.folders[id].name}</p>
-        <button
+      <p>
+        💀📁 {directory.folders[id].name}<button
           class="close-page-button"
           onclick={() => {
             delete directory.folders[id];
           }}>❌</button
         >
-      </div>
+      </p>
     {/each}
   </section>
   <section id="orphaned-pages">
     <p>Orphaned pages:</p>
     {#each directory.orphanedPages as id}
-      <div class="page">
-        <p>💀📄 {pages[id].title}</p>
-        <button
+      <p>
+        💀📄 {pages[id].title}<button
           class="close-page-button"
           onclick={() => {
             delete pages[id];
           }}>❌</button
         >
-      </div>
+      </p>
     {/each}
   </section>
 </footer>
@@ -143,7 +147,6 @@
     position: sticky;
     top: 0;
     z-index: 999;
-    margin-bottom: var(--m);
     padding-block: var(--m);
     padding-inline: calc(var(--safe-area-inline) + var(--m));
     background-color: var(--bg-alt);
@@ -158,30 +161,35 @@
   }
 
   main {
-    max-width: 800px;
-    padding-inline: var(--l);
-    margin-inline: auto;
-  }
-
-  section.items {
+    max-width: 600px;
     display: flex;
     flex-direction: column;
-    gap: var(--m);
-  }
-  .item {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    background-color: var(--bg-alt);
-    padding: var(--s);
-    border-radius: 8px;
-    gap: var(--s);
+  
+    align-items: left;
+    gap: var(--l);
+    padding: var(--xl);
   }
 
-  section.buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--m);
-    margin-top: var(--l);
+  section#folders {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit, 55px);
+    grid-template-rows: 55px;
+    gap: var(--l);
+  }
+  #add-folder {
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  section#pages {
+    display: grid;
+
+    gap: var(--l);
+  }
+
+  #add-page {
   }
 
   footer {

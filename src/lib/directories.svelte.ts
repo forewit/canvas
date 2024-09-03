@@ -4,8 +4,9 @@ import type { DocumentData } from 'firebase/firestore';
 import { getPagesContext } from './pages.svelte';
 
 
-type Folder = {
+export type Folder = {
     name: string
+    color: string
     subfolders?: string[],
     pages?: string[],
 }
@@ -15,10 +16,10 @@ type Directory = {
     folders: Record<string, Folder>
 }
 
-function createDirectories() {
+function createDirectory() {
     let lastUpdated = $state(0)
     let remoteRootUpdate = $state(true);
-    let root: Folder = $state({ name: "Home" })
+    let root: Folder = $state({ name: "Home", color: "red" })
     let folders: Record<string, Folder> = $state({ "root": root })
     let currentPath: string[] = $state(["root"])
     let currentFolder = $derived(folders[currentPath[currentPath.length - 1]])
@@ -73,7 +74,7 @@ function createDirectories() {
     function sanitizeDirectory(data: DocumentData): { wasValid: boolean, sanitizedDirectory: Directory } {
         let sanitizedDirectory: Directory = {
             lastUpdated: Date.now(),
-            folders: { "root": { name: "Home" } },
+            folders: { "root": { name: "Home", color: "red" } },
         };
 
         // TODO: make more robust
@@ -92,10 +93,10 @@ function createDirectories() {
         firebase.publishDoc(["directories", "root"], { lastUpdated, folders })
     }
 
-    function addSubfolder(title = "New Folder") {
+    function addSubfolder(title = "New Folder", color = "red") {
         const id = crypto.randomUUID().slice(0, 8)
         if (!currentFolder.subfolders) currentFolder.subfolders = []
-        folders[id] = { name: title }
+        folders[id] = { name: title, color: color }
         currentFolder.subfolders.push(id)
     }
 
@@ -177,13 +178,13 @@ function createDirectories() {
     }
 }
 
-const DIRECTORIES_KEY = Symbol('directories')
+const DIRECTORY_KEY = Symbol('directories')
 
-export const setDirectoriesContext = () => {
-    const nDirectories = createDirectories();
-    return setContext(DIRECTORIES_KEY, nDirectories)
+export const setDirectoryContext = () => {
+    const nDirectories = createDirectory();
+    return setContext(DIRECTORY_KEY, nDirectories)
 }
 
-export const getDirectoriesContext = (): ReturnType<typeof setDirectoriesContext> => {
-    return getContext(DIRECTORIES_KEY)
+export const getDirectoryContext = (): ReturnType<typeof setDirectoryContext> => {
+    return getContext(DIRECTORY_KEY)
 }

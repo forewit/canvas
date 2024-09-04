@@ -9,10 +9,10 @@
     url,
     size = "1em",
     color = "var(--main)",
-  }: Props = $props();
+}: Props = $props();
 </script>
 
-<div class="icon">
+<div class="icon" >
   <span
     style="-webkit-mask: url({url}) no-repeat center / contain;
         mask: url({url}) no-repeat center / contain; 

@@ -38,111 +38,114 @@
   }
 </script>
 
-<div class="page-container" style="background-color: {directory.currentFolder.color};">
-
-
-<header>
-  <Button
-    variant="alt"
-    onclick={() => {
-      if (directory.currentPath.length > 1) {
-        directory.currentPath.pop();
-      }
-    }}
-    disabled={directory.currentPath.length <= 1}>🔙</Button
-  >
-  <p>{directory.currentFolder.name}</p>
-  <ColorPicker bind:color={directory.currentFolder.color}   />
-</header>
-
-<main>
-  <div class="grid">
-    {#if directory.currentFolder.subfolders}
-      {#each directory.currentFolder.subfolders as id}
-        <div class="item">
-          <Folder
-            folder={directory.folders[id]}
-            onclick={() => directory.currentPath.push(id)}
-          />
-        </div>
-      {/each}
-      <div class="item">
-        <button class="add-folder" onclick={() => directory.addSubfolder()}>
-          <Icon url="{base}/images/icons/plus.svg" color="var(--bg)" />
-        </button>
-      </div>
-      {:else}
-      <div class="full-width-item">
-        <button class="add-folder" onclick={() => directory.addSubfolder()}>
-          <Icon url="{base}/images/icons/plus.svg" color="var(--bg)" />
-        </button>
-      </div>
-      
-    {/if}
-
-    {#each currentFolderPages as id}
-      <div class="full-width-item">
-        <Page page={pages[id]} onclick={() => goto(base + "/" + id + "/")} />
-      </div>
-    {/each}
-    <div class="full-width-item">
+<div
+  class="page-container"
+  style="background-color: {directory.currentFolder.color};"
+>
+  <header>
+    {#if directory.currentPath.length > 1}
       <button
-        class="add-page"
+        class="back-button"
         onclick={() => {
-          const id = createPage();
-          directory.addPageID(id);
+          if (directory.currentPath.length > 1) {
+            directory.currentPath.pop();
+          }
         }}
       >
-        <Icon url="{base}/images/icons/plus.svg" color="var(--bg)" />
+        <Icon url="{base}/images/icons/back.svg" color="var(--bg)" size="24px" />
       </button>
+    {/if}
+
+    <div class="title">{directory.currentFolder.name}</div>
+    <ColorPicker bind:color={directory.currentFolder.color} />
+  </header>
+
+  <main>
+    <div class="grid">
+      {#if directory.currentFolder.subfolders}
+        {#each directory.currentFolder.subfolders as id}
+          <div class="item">
+            <Folder
+              folder={directory.folders[id]}
+              onclick={() => directory.currentPath.push(id)}
+            />
+          </div>
+        {/each}
+      {/if}
+
+      <div
+        class:item={directory.currentFolder.subfolders}
+        class:full-width-item={!directory.currentFolder.subfolders}
+      >
+        <button class="add-folder" onclick={() => directory.addSubfolder()}>
+          <Icon url="{base}/images/icons/plus.svg" color="var(--bg)" />
+        </button>
+      </div>
+
+      {#each currentFolderPages as id}
+        <div class="full-width-item">
+          <Page page={pages[id]} onclick={() => goto(base + "/" + id + "/")} />
+        </div>
+      {/each}
+      <div class="full-width-item">
+        <button
+          class="add-page"
+          onclick={() => {
+            const id = createPage();
+            directory.addPageID(id);
+          }}
+        >
+          <Icon url="{base}/images/icons/plus.svg" color="var(--bg-alt)" />
+        </button>
+      </div>
     </div>
-  </div>
-</main>
+  </main>
 
-<footer>
-  <a href="{base}/profile">
-    <Button iconURL="{base}/images/icons/gear.svg"></Button>
-  </a>
-  <Button
-    variant="error"
-    iconURL="{base}/images/icons/xmark-small.svg"
-    disabled={directory.currentPath.length <= 1}
-    onclick={() => {
-      if (directory.currentPath.length > 1) {
-        const id = directory.currentPath.pop();
-        if (id) directory.removeSubfolder(id);
-      }
-    }}>Delete Folder</Button
-  >
+  <footer>
+    <a href="{base}/profile">
+      <Button iconURL="{base}/images/icons/gear.svg"></Button>
+    </a>
+    <Button
+      variant="error"
+      iconURL="{base}/images/icons/xmark-small.svg"
+      disabled={directory.currentPath.length <= 1}
+      onclick={() => {
+        if (directory.currentPath.length > 1) {
+          const id = directory.currentPath.pop();
+          if (id) directory.removeSubfolder(id);
+        }
+      }}>Delete Folder</Button
+    >
 
-  <section id="orphaned-folders">
-    <p>Orphaned folders:</p>
-    {#each directory.orphanedFolders as id}
-      <p>
-        💀📁 {directory.folders[id].name}<button
-          class="close-page-button"
-          onclick={() => {
-            delete directory.folders[id];
-          }}>❌</button
-        >
-      </p>
-    {/each}
-  </section>
-  <section id="orphaned-pages">
-    <p>Orphaned pages:</p>
-    {#each directory.orphanedPages as id}
-      <p>
-        💀📄 {pages[id].title}<button
-          class="close-page-button"
-          onclick={() => {
-            delete pages[id];
-          }}>❌</button
-        >
-      </p>
-    {/each}
-  </section>
-</footer>
+    <section id="orphaned-folders">
+      <p>Orphaned folders:</p>
+      {#each directory.orphanedFolders as id}
+        <p>
+          💀📁 {directory.folders[id].name}<button
+            class="close-page-button"
+            onclick={() => {
+              delete directory.folders[id];
+            }}>❌</button
+          >
+        </p>
+      {/each}
+    </section>
+    <section id="orphaned-pages">
+      <p>Orphaned pages:</p>
+      {#each directory.orphanedPages as id}
+        <p>
+          💀📄 {pages[id].title}<button
+            class="close-page-button"
+            onclick={() => {
+              delete pages[id];
+            }}>❌</button
+          >
+        </p>
+      {/each}
+    </section>
+  </footer>
 </div>
+
 <style>
   .page-container {
     height: 100%;
@@ -151,7 +154,7 @@
     position: sticky;
     top: 0;
     z-index: 999;
-    padding-block: var(--m);
+    padding-block: 20px;
     padding-inline: calc(var(--safe-area-inline) + var(--m));
 
     display: flex;
@@ -159,17 +162,23 @@
     justify-content: center;
     align-items: center;
   }
+  .title {
+    text-wrap: nowrap;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--bg);
+  }
   main {
     padding-block: 30px;
     padding-inline: 20px;
     max-width: 560px;
-    min-width: 300px;
+    min-width: 320px;
     margin: auto;
   }
 
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, 70px);
+    grid-template-columns: repeat(auto-fit, 80px);
     justify-content: center;
     gap: 20px;
   }
@@ -183,9 +192,21 @@
     place-self: center;
     width: 30px;
     aspect-ratio: 1;
-    background-color: var(--bg-alt);
-    border-radius: 4px;
+    position: relative;
   }
+  .add-folder::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg);
+    opacity: 0.4;
+    border-radius: 4px;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
   .full-width-item {
     grid-column: 1/-1;
     width: 100%;
@@ -197,8 +218,19 @@
     place-self: center;
     width: 200px;
     height: 24px;
-    background-color: var(--bg-alt);
+    position: relative;
+  }
+  .add-page::before {
+    content: "";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg);
+    opacity: 0.4;
     border-radius: 4px;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   footer {

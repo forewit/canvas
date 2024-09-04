@@ -9,7 +9,6 @@
   let { children }: { children: Snippet } = $props();
 
   const app = getAppContext();
-  let currentTheme = $derived(themes.find((t) => t.name === app.theme));
 
   function updateSafeAreas() {
     if (!screen)
@@ -39,12 +38,12 @@
   }
 
   $effect.pre(() => {
-    if (currentTheme) {
+    if (app.theme) {
       const root = document.documentElement
-      applyTheme(root, currentTheme);
+        applyTheme(root, app.theme);
       document
         .querySelector('meta[name="theme-color"]')
-        ?.setAttribute("content", currentTheme.bg);
+        ?.setAttribute("content", app.theme.bg);
     }
   });
 

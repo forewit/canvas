@@ -2,12 +2,16 @@
 :root {
   /* default theme variables */
   --bg: #f0f0f0; /* background */
-  --bg-alt: #e6e6e6; /* input background */
+  --bg-alt: #ffffff; /* input background */
   --main: #c2c3cc; /* selected background*/
-  --card: #ffffff; /* caret */
-  --error: #ff5c5c; /* error background */
+  --error: #f24726; /* error background */
   --text: #1a1a1a; /* text, :hover background */
-  --sub: #bbbcc7; /* headings, :active background */
+  --sub: #808080; /* headings, :active background */
+  --theme1: #414bb2;
+  --theme2: #0ca789;
+  --theme3: #b5266c;
+  --theme4: #333333;
+  --theme5: #cca349;
 
   /* sizing based on Fibonacci & the Golden Rectangle */
   --xs: 3px;

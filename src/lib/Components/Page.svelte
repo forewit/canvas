@@ -28,7 +28,7 @@
 <style>
   button {
     text-align: start;
-    background-color: var(--bg-alt);
+    background-color: var(--bg);
     color: var(--text);
     padding-block: var(--m);
     padding-right: var(--xl);

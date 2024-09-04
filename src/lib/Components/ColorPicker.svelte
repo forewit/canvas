@@ -1,16 +1,32 @@
 <script>
   import { slide } from "svelte/transition";
+  import { themes } from "$lib/Components/ThemeWrapper/themes.svelte";
+  import { getAppContext } from "$lib/app.svelte";
 
   let { color = $bindable() } = $props();
 
-  let colorOptions = ["red", "orange", "yellow", "green", "blue", "purple"];
+  const app = getAppContext();
+  let currentTheme = $derived(themes.find((t) => t.name === app.themeName));
+
+  let colorOptions = $derived(currentTheme ? [
+    currentTheme.theme1,
+    currentTheme.theme2,
+    currentTheme.theme3,
+    currentTheme.theme4,
+    currentTheme.theme5,
+  ] : []);
 
   let showPicker = $state(false);
 </script>
 
 <div class="color-picker-container">
   <!-- radio buttons that bind the value to color -->
-  <button class="current-color" style="background-color: {color}" onclick={() => (showPicker = !showPicker)}> </button>
+  <button
+    class="current-color"
+    style="background-color: {color}"
+    onclick={() => (showPicker = !showPicker)}
+  >
+  </button>
   {#if showPicker}
     <div class="color-picker" transition:slide={{ duration: 200, axis: "x" }}>
       {#each colorOptions as option}
@@ -30,11 +46,11 @@
 </div>
 
 <style>
-    .color-picker-container {
-      display: flex;
-      gap: 0.5em;
-      align-items: center;
-    }
+  .color-picker-container {
+    display: flex;
+    gap: 0.5em;
+    align-items: center;
+  }
 
   .current-color {
     width: 2em;
@@ -51,14 +67,11 @@
   }
 
   input {
-    border: 4px solid var(--bg-alt);
+    border:2px solid var(--bg);
     border-radius: 100%;
     width: 1.5em;
     height: 1.5em;
     appearance: none;
     cursor: pointer;
-  }
-  .selected {
-    border: 4px solid var(--bg);
   }
 </style>

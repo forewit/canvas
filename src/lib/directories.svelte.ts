@@ -2,6 +2,7 @@ import { getContext, setContext, untrack } from 'svelte';
 import { getFirebaseContext } from './firebase.svelte';
 import type { DocumentData } from 'firebase/firestore';
 import { getPagesContext } from './pages.svelte';
+import { getAppContext } from './app.svelte';
 
 
 export type Folder = {
@@ -23,6 +24,8 @@ function createDirectory() {
     let folders: Record<string, Folder> = $state({ "root": root })
     let currentPath: string[] = $state(["root"])
     let currentFolder = $derived(folders[currentPath[currentPath.length - 1]])
+
+    const app = getAppContext()
 
     let orphanedFolders: string[] = $derived.by(() => {
         let orphaned = Object.keys(folders).filter((folder) => folder !== "root");
@@ -93,7 +96,7 @@ function createDirectory() {
         firebase.publishDoc(["directories", "root"], { lastUpdated, folders })
     }
 
-    function addSubfolder(title = "New Folder", color = "red") {
+    function addSubfolder(title = "New Folder", color = app.theme.theme1) {
         const id = crypto.randomUUID().slice(0, 8)
         if (!currentFolder.subfolders) currentFolder.subfolders = []
         folders[id] = { name: title, color: color }

@@ -72,8 +72,8 @@
       {#each themes as theme}
         <Button
           {theme}
-          onclick={() => (app.theme = theme.name)}
-          selected={app.theme === theme.name}>{theme.name}</Button
+          onclick={() => (app.themeName = theme.name)}
+          selected={app.themeName === theme.name}>{theme.name}</Button
         >
       {/each}
     </div>

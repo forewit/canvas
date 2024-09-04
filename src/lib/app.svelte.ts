@@ -1,6 +1,7 @@
 import { getContext, setContext } from 'svelte';
 import { getFirebaseContext } from '$lib/firebase.svelte';
 import type { DocumentData } from 'firebase/firestore';
+import { themes } from '$lib/Components/ThemeWrapper/themes.svelte';
 
 function createApp() {
     const firebase = getFirebaseContext()
@@ -8,18 +9,19 @@ function createApp() {
     let lastUpdated = 0;
     let username = $state("")
     let authRedirect = $state("")
-    let theme = $state("Canvas")
+    let themeName = $state("Canvas")
+    let theme =  $derived(themes.find((t) => t.name === themeName) || themes[0]);
     let spellcheck = $state(true)
     let showFolderPreview = $state(true)
     let showFolderName = $state(true)
 
     function publishSettings() {
-        firebase.publishDoc([], {lastUpdated, theme: theme, spellcheck, username, showFolderName, showFolderPreview})
+        firebase.publishDoc([], {lastUpdated, theme: themeName, spellcheck, username, showFolderName, showFolderPreview})
     }
 
     function ImportSettings(data: DocumentData) {
         if (Object.hasOwn(data, "username") && typeof data.username === "string") username = data.username
-        if (Object.hasOwn(data, "theme") && typeof data.theme === "string") theme = data.theme
+        if (Object.hasOwn(data, "theme") && typeof data.theme === "string") themeName = data.theme
         if (Object.hasOwn(data, "spellcheck") && typeof data.spellcheck === "boolean") spellcheck = data.spellcheck
         if (Object.hasOwn(data, "showFolderPreview") && typeof data.showFolderPreview === "boolean") showFolderPreview = data.showFolderPreview
         if (Object.hasOwn(data, "showFolderName") && typeof data.showFolderName === "boolean") showFolderName = data.showFolderName
@@ -45,12 +47,13 @@ function createApp() {
             lastUpdated = Date.now()
             publishSettings()
         },
-        get theme() { return theme },
-        set theme(value) {
-            theme = value
+        get themeName() { return themeName },
+        set themeName(value) {
+            themeName = value
             lastUpdated = Date.now()
             publishSettings()
         },
+        get theme() { return theme },
         get spellcheck() { return spellcheck },
         set spellcheck(value) {
             spellcheck = value

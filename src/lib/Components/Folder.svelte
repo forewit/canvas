@@ -22,7 +22,7 @@
   class="folder-button"
   class:centerTitle
   {onclick}
-  style="background-color: {folder.color}; border-color: {folder.color};"
+  style="--folder-color: {folder.color};"
 >
   {#if folder.name !== "" && app.showFolderName}
     <p>{folder.name}</p>
@@ -59,6 +59,9 @@
     border-bottom: 0.5em solid;
     border-radius: 0.8em;
     overflow: hidden;
+    background-color: var(--folder-color); 
+    border-color: var(--folder-color);
+    box-shadow: 0 0 0px 5px rgba(255, 255, 255, 0.2);
   }
   .folder-button.centerTitle {
     justify-content: center;

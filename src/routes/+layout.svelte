@@ -14,8 +14,9 @@
   
   const firebase = setFirebaseContext();
   const pages = setPagesContext();
-  const directories = setDirectoryContext();
   const app = setAppContext();
+  const directories = setDirectoryContext();
+
 
   $effect(() => {
     app.authRedirect = window.location.pathname;

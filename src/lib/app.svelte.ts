@@ -14,7 +14,7 @@ function createApp() {
     let showFolderName = $state(true)
 
     function publishSettings() {
-        firebase.publishDoc([], {lastUpdated, theme: theme, spellcheck, username})
+        firebase.publishDoc([], {lastUpdated, theme: theme, spellcheck, username, showFolderName, showFolderPreview})
     }
 
     function ImportSettings(data: DocumentData) {

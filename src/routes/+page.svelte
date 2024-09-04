@@ -11,6 +11,7 @@
   import Folder from "$lib/Components/Folder.svelte";
   import Page from "$lib/Components/Page.svelte";
   import Icon from "$lib/Components/Icon.svelte";
+  import ColorPicker from "$lib/Components/ColorPicker.svelte";
 
   const app = getAppContext();
   const pages = getPagesContext();
@@ -37,6 +38,9 @@
   }
 </script>
 
+<div class="page-container" style="background-color: {directory.currentFolder.color};">
+
+
 <header>
   <Button
     variant="alt"
@@ -47,6 +51,8 @@
     }}
     disabled={directory.currentPath.length <= 1}>🔙</Button
   >
+  <p>{directory.currentFolder.name}</p>
+  <ColorPicker bind:color={directory.currentFolder.color}   />
 </header>
 
 <main>
@@ -136,17 +142,22 @@
     {/each}
   </section>
 </footer>
-
+</div>
 <style>
+  .page-container {
+    height: 100%;
+  }
   header {
     position: sticky;
     top: 0;
     z-index: 999;
     padding-block: var(--m);
     padding-inline: calc(var(--safe-area-inline) + var(--m));
-    background-color: var(--bg-alt);
 
     display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
   }
   main {
     padding-block: 30px;

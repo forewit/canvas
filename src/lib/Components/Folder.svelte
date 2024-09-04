@@ -92,7 +92,7 @@
     border-radius: 0.2em;
   }
   .line {
-    min-height: 0.4em;
+    min-height: 0.5em;
     width: 100%;
     border-radius: 0.1em;
     background-color: var(--bg);

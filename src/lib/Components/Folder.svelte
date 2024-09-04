@@ -6,7 +6,7 @@
     folder: Folder;
     onclick?: () => void;
   };
-  
+
   let { folder, onclick }: props = $props();
 
   const app = getAppContext();
@@ -18,7 +18,7 @@
 </script>
 
 <button
-disabled={!onclick}
+  disabled={!onclick}
   class="folder-button"
   class:centerTitle
   {onclick}
@@ -47,7 +47,7 @@ disabled={!onclick}
 <style>
   .folder-button {
     /* Scale font size to change size */
-    font-size: 11px;
+    font-size: 14px;
 
     width: 5em;
     aspect-ratio: 1;
@@ -67,7 +67,7 @@ disabled={!onclick}
     outline: var(--bg) dashed var(--xs);
     outline-offset: calc(-1 * var(--xs));
   }
-  
+
   .folder-button:disabled {
     cursor: auto;
   }

@@ -27,6 +27,11 @@
   />
 </header>
 
+
+<main>
+  <!-- Layout builder -->
+</main>
+
 <style>
   header {
     display: flex;

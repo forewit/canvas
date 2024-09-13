@@ -1,7 +1,7 @@
 <script lang="ts">
   type props = {
     placeholder?: string;
-    value?: string | number;
+    value?: string;
     oninput?: () => void;
     disabled?: boolean;
     variant?: "alt";

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { type Folder } from "$lib/directories.svelte";
+  import { type TreeNode } from "$lib/directories.svelte";
   import { getAppContext } from "$lib/app.svelte";
 
   type props = {
-    folder: Folder;
+    folder: TreeNode;
     onclick?: () => void;
   };
 

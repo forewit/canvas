@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount } from "svelte";
 
   type props = {
     tree: Record<string, TreeNode>;
     newFolder?: (parent: string) => void;
     newPage?: (parent: string) => void;
     removeChild?: (parent: string, child: string) => void;
-    active?: boolean
+    active?: boolean;
   };
 
   let {
@@ -14,10 +14,8 @@
     newFolder = () => {},
     newPage = () => {},
     removeChild = () => {},
-    active = true
+    active = true,
   }: props = $props();
-
-
 
   type TreeNode = {
     name: string;
@@ -28,6 +26,7 @@
 
   let expandedNodes: string[] = $state(["root"]);
   let selectedNode: string = $state("root");
+  let activeNode: string = $state("root");
   let parentNode: string = $derived.by(() => {
     for (const id in tree) {
       if (
@@ -40,7 +39,34 @@
     return "root";
   });
 
+  //TODO: arrow keys
+  /**
+   * left: close folder or navigate up
+   * right: open folder or navigate down
+   * up or shift+tab: navigate up
+   * down or tab: navigate down
+   * enter: open page or open folder
+   *
+   * do this by toggling tabindex from -1 to 0 and focus the button
+   */
+
+  let directoryElm: HTMLDivElement;
+  let directoryButtons: HTMLButtonElement[] = $state([]);
+  let currentButtonIndex = $derived(
+    directoryButtons.findIndex((button) => button.id === selectedNode)
+  );
+
+  $effect(() => {
+    if (expandedNodes.length > 0 && Object.keys(tree).length > 0) {
+      directoryButtons = Array.from(directoryElm.querySelectorAll("button"));
+    } else {
+      directoryButtons = [];
+    }
+  });
+
   function toggleNode(id: string) {
+    selectedNode = id;
+    activeNode = id;
     if (tree[id].type === "folder") {
       if (expandedNodes.includes(id)) {
         expandedNodes = expandedNodes.filter((node) => node !== id);
@@ -50,86 +76,77 @@
     }
   }
 
-  //TODO: arrow keys
-  /**
-   * left: close folder or navigate up
-   * right: open folder or navigate down
-   * up or shift+tab: navigate up
-   * down or tab: navigate down
-   * enter: open page or open folder
-   * 
-   * do this by toggling tabindex from -1 to 0 and focus the button
-  */
-
-  let directoryElm: HTMLDivElement;
-  let allButtons: HTMLButtonElement[] = $state([])
-  let currentButtonIndex = $derived(allButtons.findIndex((button) => button.id === selectedNode))
-
-  $effect(()=>{
-    if (expandedNodes.length > 0 && Object.keys(tree).length > 0) {
-      allButtons = Array.from(directoryElm.querySelectorAll("button"))
-    } else {
-      allButtons = []
-    }
-  })
-
   function navigateUp() {
     if (currentButtonIndex > 0) {
-      selectedNode = allButtons[currentButtonIndex - 1].id
-    } 
+      const button = directoryButtons[currentButtonIndex - 1];
+      selectedNode = button.id;
+      button.focus();
+    }
   }
 
   function navigateDown() {
-    if (currentButtonIndex < allButtons.length - 1) {
-      selectedNode = allButtons[currentButtonIndex + 1].id
+    if (currentButtonIndex < directoryButtons.length - 1) {
+      const button = directoryButtons[currentButtonIndex + 1];
+      selectedNode = button.id;
+      button.focus();
     }
   }
 
   function clearFocus() {
+    console.log("clear focus");
     selectedNode = "root";
-    allButtons.forEach(button => button.blur())
-    directoryElm.focus();
+    activeNode = "root";
+    directoryButtons.forEach((button) => button.blur());
   }
 
   function deleteChildNode(id: string) {
     if (confirm("Are you sure you want to delete?")) {
-        removeChild(parentNode, id)
-        selectedNode = parentNode
+      removeChild(parentNode, id);
+      navigateUp();
     }
   }
 
   function handleKeydown(event: KeyboardEvent) {
-    if (!active) return
+    console.log();
+    if (
+      !active ||
+      (tree["root"].type === "folder" && tree["root"].children.length <= 0)
+    )
+      return;
 
     switch (event.key) {
       case "ArrowLeft":
         if (expandedNodes.includes(selectedNode)) {
           toggleNode(selectedNode);
         } else {
-          navigateUp()
+          navigateUp();
         }
         break;
       case "ArrowRight":
-        if (tree[selectedNode].type === "folder" && selectedNode !== "root" && !expandedNodes.includes(selectedNode)) {
+        if (
+          tree[selectedNode].type === "folder" &&
+          selectedNode !== "root" &&
+          !expandedNodes.includes(selectedNode)
+        ) {
           toggleNode(selectedNode);
         } else {
-          navigateDown()
+          navigateDown();
         }
         break;
       case "ArrowUp":
         navigateUp();
         break;
-      case "ArrowDown": 
+      case "ArrowDown":
         navigateDown();
         break;
       case "Enter":
+        event.preventDefault();
         toggleNode(selectedNode);
-        // TODO: open page
-        break;  
-    case "Escape":
+        break;
+      case "Escape":
         clearFocus();
         break;
-    case "Tab":
+      case "Tab":
         event.preventDefault();
         if (event.shiftKey) {
           navigateUp();
@@ -137,24 +154,24 @@
           navigateDown();
         }
         break;
-    case "delete":
+      case "Delete":
         //remove with confirmation
-       deleteChildNode(selectedNode);
+        deleteChildNode(selectedNode);
         break;
-  }
-}
- onMount(() => {
-    document.addEventListener("keydown", handleKeydown);
-    return ()=>{
-        document.removeEventListener("keydown", handleKeydown);
     }
-})
+  }
+  onMount(() => {
+    document.addEventListener("keydown", handleKeydown);
+    return () => {
+      document.removeEventListener("keydown", handleKeydown);
+    };
+  });
 </script>
-<div class="tree">
 
-    <div class="controls">
-        <p class="title">My Project</p>
-        <button
+<div class="tree">
+  <div class="controls">
+    <p class="title">My Project</p>
+    <button
       onclick={() => {
         if (tree[selectedNode].type === "folder") {
           expandedNodes.push(selectedNode);
@@ -177,89 +194,97 @@
     <button
       disabled={!selectedNode || selectedNode === "root"}
       class="delete-button"
-        onclick={()=>{
-            deleteChildNode(selectedNode);
-                 
-        }}
-    >-🗑️</button>
-    </div>
-    
+      onclick={() => {
+        deleteChildNode(selectedNode);
+      }}>-🗑️</button
+    >
+  </div>
+
   <div class="directory" bind:this={directoryElm}>
     {@render node(tree["root"])}
   </div>
 </div>
 
 {#snippet node(treeNode: TreeNode, depth = 0)}
-  {#if treeNode.type === "folder"}
-    <ol style="--depth: {depth}">
-      {#each treeNode.children as id}
-        {#if tree[id].type === "page"}
-          <li>
-            
+{#if treeNode.type === "folder"}
+  <ol style="--depth: {depth}">
+    {#each treeNode.children as id}
+      {#if tree[id].type === "page"}
+        <li>
+          <button
+            {id}
+            class:active={activeNode === id}
+            class:selected={selectedNode === id}
+            onclick={() => {
+              toggleNode(id);
+            }}>📜 {tree[id].name}</button
+          >
+        </li>
+      {:else if tree[id].type === "folder"}
+        <li>
+          {#if expandedNodes.includes(id)}
             <button
-              id={id}
+              {id}
+              class:active={activeNode === id}
               class:selected={selectedNode === id}
-              onclick={() => {selectedNode = id; toggleNode(id)}}>📜 {tree[id].name}</button
+              onclick={() => {
+                toggleNode(id);
+              }}>📂 {tree[id].name}</button
             >
-          </li>
-        {:else if tree[id].type === "folder"}
-          <li>
-            {#if expandedNodes.includes(id)}
-              <button
-                id={id}
-                class:selected={selectedNode === id}
-                onclick={() => {selectedNode = id; toggleNode(id)}}>📂 {tree[id].name}</button
-              >
-              {@render node(tree[id], depth + 1)}
-            {:else}
-              <button
-                id={id}
-                class:selected={selectedNode === id}
-                onclick={() => {selectedNode = id; toggleNode(id)}}>📁 {tree[id].name}</button
-              >
-            {/if}
-          </li>
-        {/if}
-      {/each}
-    </ol>
-  {/if}
-  {/snippet}
+            {@render node(tree[id], depth + 1)}
+          {:else}
+            <button
+              {id}
+              class:active={activeNode === id}
+              class:selected={selectedNode === id}
+              onclick={() => {
+                toggleNode(id);
+              }}>📁 {tree[id].name}</button
+            >
+          {/if}
+        </li>
+      {/if}
+    {/each}
+  </ol>
+{/if}
+{/snippet}
 
 <style>
-    .tree {
-        background: var(--bg-alt);
-        width: min-content;
-        padding: 1em;
-        border-radius: 4px;
-        display: grid;
-        gap: 1em;
-    }
+  .tree {
+    background: var(--bg-alt);
+    width: min-content;
+    padding: 1em;
+    border-radius: 4px;
+    display: grid;
+    gap: 1em;
+  }
 
-    .controls {
-        display: flex;
-    }
-    .title {
-        flex-grow: 1;
-    }
-    .delete-button:disabled {
-        opacity: 0.5;
-        pointer-events: none;
-    }
+  .controls {
+    display: flex;
+  }
+  .title {
+    flex-grow: 1;
+  }
+  .delete-button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
-    .directory {
-        min-width: 200px;
-        width: min-content;
-        
-    }
-    ol button {
-        padding-left: calc(var(--depth) * 1em);
-        width: 100%;
-        justify-content: left;
-        display: flex;
-    }
-
+  .directory {
+    min-width: 200px;
+    width: min-content;
+  }
+  ol button {
+    padding-left: calc(var(--depth) * 1em);
+    width: 100%;
+    justify-content: left;
+    display: flex;
+  }
   .selected {
-      outline: 2px solid gold;
-      background-color: goldenrod;
+    outline: 2px solid gold;
+  }
+
+  .active {
+    color: red;
   }
 </style>

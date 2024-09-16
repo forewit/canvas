@@ -1,1 +1,0 @@
-import{a,b as e}from"./disclose-version.6vPDxpwZ.js";var v=e('<div class="progress-bar svelte-1u2nbnk"><div class="progress-bar-value svelte-1u2nbnk"></div></div>');function t(r){var s=v();a(r,s)}export{t as P};

@@ -1,1 +1,0 @@
-import{b as n,U as i,j as o,y as p,h as c,f as h}from"./runtime.A5g2blTK.js";function y(s,t,...f){var e=s,a,r;n(()=>{a!==(a=t())&&(r&&(p(r),r=null),a&&(r=o(()=>a(e,...f))))},i),c&&(e=h)}export{y as s};

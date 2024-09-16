@@ -24,8 +24,6 @@ function createDirectory() {
     let currentPath: string[] = $state(["root"])
     let currentFolder = $derived(tree[currentPath[currentPath.length - 1]])
 
-    const app = getAppContext()
-
     let orphanedFolders: string[] = $derived.by(() => {
         let orphaned = Object.keys(tree).filter((folder) => folder !== "root");
         let stack = ["root"];  // Initialize stack with root folder
@@ -86,34 +84,33 @@ function createDirectory() {
     }
 
     function publishRootDirectory() {
-        firebase.publishDoc(["directories", "root"], { lastUpdated, folders: tree })
+        firebase.publishDoc(["directories", "root"], { lastUpdated, tree: tree })
     }
 
-    function addSubfolder(title = "New Folder") {
-        if (currentFolder.type !== "folder") return
+    function addSubfolder(parent: string, title = "New Folder") {
+        if (!tree[parent] || tree[parent].type !== "folder") return
         const id = crypto.randomUUID().slice(0, 8)
         tree[id] = { name: title, type: "folder", children: [] }
-        currentFolder.children.push(id)
+        tree[parent].children.push(id)
     }
 
-    function addPageID(id: string) {
-        if (currentFolder.type !== "folder") return
-        tree[id] = { name: id, type: "page", pageID: id }
-        currentFolder.children.push(id)
+    function addPageID(parent:string, pageID: string) {
+        if (!tree[parent] || tree[parent].type !== "folder") return
+        tree[pageID] = { name: "Untitled", type: "page", pageID: pageID }
+        tree[parent].children.push(pageID)
     }
 
-    function removePageID(id: string) {
-        if (currentFolder.type !== "folder") return
-        currentFolder.children = currentFolder.children.filter((child) => child !== id)
-        delete tree[id]
+    function removeChild(parent: string, id: string) {
+        if (!tree[parent] || tree[parent].type !== "folder") return
+        tree[parent].children = tree[parent].children.filter(child => child !== id)
+    }
+    function removePage(id: string) {
+        // TODO, remove page
     }
 
     function removeSubfolder(id: string) {
-        if (currentFolder.type !== "folder") return
-        currentFolder.children = currentFolder.children.filter((child) => child !== id)
-        delete tree[id]
+        // TODO, remove subfolder
     }
-
 
 
     firebase.subscribeToCollection(["directories"], (id, doc) => {
@@ -163,14 +160,15 @@ function createDirectory() {
     })
 
     return {
-        get folders() { return tree },
+        get tree() { return tree },
         get currentPath() { return currentPath },
         set currentPath(value) { currentPath = value },
         get currentFolder() { return currentFolder },
         get addSubfolder() { return addSubfolder },
         get removeSubfolder() { return removeSubfolder },
         get addPageID() { return addPageID },
-        get removePageID() { return removePageID },
+        get removePageID() { return removePage },
+        get removeChild() { return removeChild },
         get orphanedFolders() { return orphanedFolders },
         get orphanedPages() { return orphanedPages },
     }

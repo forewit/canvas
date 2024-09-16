@@ -17,15 +17,21 @@
 <div class="page-container">
   <header>
     <Tree
-      tree={directory.folders}
-      newPage={() => {
+      tree={directory.tree}
+      newPage={(parent) => {
         const id = crypto.randomUUID().slice(0, 8);
         pages[id] = {
           lastUpdated: Date.now(),
           title: "Untitled",
           content: "",
         }
-        directory.addPageID(id);
+        directory.addPageID(parent, id);
+      }}
+      newFolder={(parent) => {
+        directory.addSubfolder(parent);
+      }}
+      removeChild={(parent, child) => {
+        directory.removeChild(parent, child);
       }}
     />
   </header>
@@ -50,10 +56,10 @@
       <p>Orphaned folders:</p>
       {#each directory.orphanedFolders as id}
         <p>
-          💀📁 {directory.folders[id].name}<button
+          💀📁 {directory.tree[id].name}<button
             class="close-page-button"
             onclick={() => {
-              delete directory.folders[id];
+              delete directory.tree[id];
             }}>❌</button
           >
         </p>

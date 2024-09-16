@@ -104,14 +104,6 @@ function createDirectory() {
         if (!tree[parent] || tree[parent].type !== "folder") return
         tree[parent].children = tree[parent].children.filter(child => child !== id)
     }
-    function removePage(id: string) {
-        // TODO, remove page
-    }
-
-    function removeSubfolder(id: string) {
-        // TODO, remove subfolder
-    }
-
 
     firebase.subscribeToCollection(["directories"], (id, doc) => {
         if (id !== "root") {
@@ -165,9 +157,7 @@ function createDirectory() {
         set currentPath(value) { currentPath = value },
         get currentFolder() { return currentFolder },
         get addSubfolder() { return addSubfolder },
-        get removeSubfolder() { return removeSubfolder },
         get addPageID() { return addPageID },
-        get removePageID() { return removePage },
         get removeChild() { return removeChild },
         get orphanedFolders() { return orphanedFolders },
         get orphanedPages() { return orphanedPages },

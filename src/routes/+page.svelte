@@ -40,18 +40,6 @@
     <a href="{base}/profile">
       <Button iconURL="{base}/images/icons/gear.svg"></Button>
     </a>
-    <Button
-      variant="error"
-      iconURL="{base}/images/icons/xmark-small.svg"
-      disabled={directory.currentPath.length <= 1}
-      onclick={() => {
-        if (directory.currentPath.length > 1) {
-          const id = directory.currentPath.pop();
-          if (id) directory.removeSubfolder(id);
-        }
-      }}>Delete Folder</Button
-    >
-
     <section id="orphaned-folders">
       <p>Orphaned folders:</p>
       {#each directory.orphanedFolders as id}

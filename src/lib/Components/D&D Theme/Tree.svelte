@@ -66,8 +66,10 @@
   let currentButtonIndex = $derived(allButtons.findIndex((button) => button.id === selectedNode))
 
   $effect(()=>{
-    if (expandedNodes.length > 0 && tree) {
+    if (expandedNodes.length > 0 && Object.keys(tree).length > 0) {
       allButtons = Array.from(directoryElm.querySelectorAll("button"))
+    } else {
+      allButtons = []
     }
   })
 
@@ -87,6 +89,13 @@
     selectedNode = "root";
     allButtons.forEach(button => button.blur())
     directoryElm.focus();
+  }
+
+  function deleteChildNode(id: string) {
+    if (confirm("Are you sure you want to delete?")) {
+        removeChild(parentNode, id)
+        selectedNode = parentNode
+    }
   }
 
   function handleKeydown(event: KeyboardEvent) {
@@ -128,9 +137,11 @@
           navigateDown();
         }
         break;
-    
+    case "delete":
+        //remove with confirmation
+       deleteChildNode(selectedNode);
+        break;
   }
-  allButtons[currentButtonIndex]?.focus()
 }
  onMount(() => {
     document.addEventListener("keydown", handleKeydown);
@@ -167,7 +178,8 @@
       disabled={!selectedNode || selectedNode === "root"}
       class="delete-button"
         onclick={()=>{
-            removeChild(parentNode, selectedNode)
+            deleteChildNode(selectedNode);
+                 
         }}
     >-🗑️</button>
     </div>

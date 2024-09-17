@@ -12,15 +12,15 @@ function createFirebase() {
     let isPublishing = $derived(Object.keys(publishQueue).length > 0)
     let user: User | null = $state(null)
     let userDocPath = $derived.by(() => { return "users/" + user?.uid })
-    let pendingSubscriptions: (()=>void)[] = []
+    let pendingSubscriptions: (() => void)[] = []
     let cleanupFunctions: (() => void)[] = []
 
-    function subscribeToDoc(path: string[], fn: (id: string, doc: DocumentData | null) => void) {        
+    function subscribeToDoc(path: string[], fn: (id: string, doc: DocumentData | null) => void) {
         if (!user) {
             pendingSubscriptions.push(() => subscribeToDoc(path, fn));
             return;
         }
-        
+
         const docRef = doc(db, userDocPath, ...path);
         const unsub = onSnapshot(docRef,
             (snap) => { fn(snap.id, snap.exists() ? snap.data() : null) },
@@ -34,7 +34,7 @@ function createFirebase() {
             pendingSubscriptions.push(() => subscribeToCollection(path, fn));
             return;
         }
-        
+
         const colRef = collection(db, userDocPath, ...path);
         const unsub = onSnapshot(colRef,
             (snap) => {

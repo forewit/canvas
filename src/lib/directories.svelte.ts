@@ -94,7 +94,7 @@ function createDirectory() {
         tree[parent].children.push(id)
     }
 
-    function addPageID(parent:string, pageID: string) {
+    function addPageID(parent: string, pageID: string) {
         if (!tree[parent] || tree[parent].type !== "folder") return
         tree[pageID] = { name: "Untitled", type: "page", pageID: pageID }
         tree[parent].children.push(pageID)

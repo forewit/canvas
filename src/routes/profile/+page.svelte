@@ -6,7 +6,7 @@
   import Button from "$lib/Components/Button.svelte";
   import TextInput from "$lib/Components/TextInput.svelte";
   import Toggle from "$lib/Components/Toggle.svelte";
-  import Icon from "$lib/Components/Icon.svelte";
+  import Icon from "$lib/Components/UI/Icon.svelte";
 
   const firebase = getFirebaseContext();
   const app = getAppContext();

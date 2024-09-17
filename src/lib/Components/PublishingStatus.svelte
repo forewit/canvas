@@ -1,7 +1,7 @@
 <script lang="ts">
   import { base } from "$app/paths";
   import { getFirebaseContext } from "$lib/firebase.svelte";
-  import Icon from "$lib/Components/Icon.svelte";
+  import Icon from "$lib/Components/UI/Icon.svelte";
 
   const firebase = getFirebaseContext();
 </script>

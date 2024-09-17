@@ -7,7 +7,6 @@
   import TextInput from "$lib/Components/TextInput.svelte";
   import Toggle from "$lib/Components/Toggle.svelte";
   import Icon from "$lib/Components/Icon.svelte";
-  import Folder from "$lib/Components/Folder.svelte";
 
   const firebase = getFirebaseContext();
   const app = getAppContext();
@@ -50,16 +49,6 @@
             />
             <p class:disabled={!app.showFolderPreview}>Show folder previews</p>
           </label>
-        </div>
-        <div style="margin-left: var(--l)">
-          <Folder
-            folder={{
-              name: "Example",
-              pages: [""],
-              subfolders: ["", ""],
-              color: "var(--main)",
-            }}
-          />
         </div>
       </div>
     </div>

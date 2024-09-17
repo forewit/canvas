@@ -6,7 +6,9 @@
   import { getFirebaseContext } from "$lib/firebase.svelte";
   import { getDirectoryContext } from "$lib/directories.svelte";
   import Button from "$lib/Components/UI/Button.svelte";
-  import Tree from "$lib/Components/Canvas Components/TreePanel.svelte";
+  import TreePanel from "$lib/Components/Canvas Components/TreePanel.svelte";
+  import PageToolbar from "$lib/Components/Canvas Components/PageToolbar.svelte";
+  import ZoomToolbar from "$lib/Components/Canvas Components/ZoomToolbar.svelte";
 
   const app = getAppContext();
   const pages = getPagesContext();
@@ -16,7 +18,13 @@
 
 <div class="page-container">
   <header>
-    <Tree
+    
+  </header>
+
+  <main>
+    <PageToolbar title="My Page"/>
+    <ZoomToolbar variant="alt" bind:zoom={app.zoom} />
+    <TreePanel
       tree={directory.tree}
       newPage={(parent) => {
         const id = crypto.randomUUID().slice(0, 8);
@@ -34,12 +42,11 @@
         directory.removeChild(parent, child);
       }}
     />
-  </header>
+  </main>
 
   <footer>
-    <a href="{base}/profile">
-      <Button iconURL="{base}/images/icons/gear.svg"></Button>
-    </a>
+      <Button iconURL="{base}/images/icons/gear.svg" href="{base}/profile">Settings</Button>
+
     <section id="orphaned-folders">
       <p>Orphaned folders:</p>
       {#each directory.orphanedFolders as id}
@@ -72,6 +79,9 @@
 <style>
   .page-container {
     height: 100%;
+  }
+  main {
+    width: max-content;
   }
 
   footer {

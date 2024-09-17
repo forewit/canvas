@@ -10,22 +10,18 @@ function createApp() {
     let username = $state("")
     let authRedirect = $state("")
     let themeName = $state("Canvas")
-    let theme =  $derived(themes.find((t) => t.name === themeName) || themes[0]);
+    let theme = $derived(themes.find((t) => t.name === themeName) || themes[0]);
     let spellcheck = $state(true)
-    let showFolderPreview = $state(true)
-    let showFolderName = $state(true)
-    let currentZoom = $state(1)
+    let zoom = $state(1)
 
     function publishSettings() {
-        firebase.publishDoc([], {lastUpdated, theme: themeName, spellcheck, username, showFolderName, showFolderPreview})
+        firebase.publishDoc([], { lastUpdated, theme: themeName, spellcheck, username, })
     }
 
     function ImportSettings(data: DocumentData) {
         if (Object.hasOwn(data, "username") && typeof data.username === "string") username = data.username
         if (Object.hasOwn(data, "theme") && typeof data.theme === "string") themeName = data.theme
         if (Object.hasOwn(data, "spellcheck") && typeof data.spellcheck === "boolean") spellcheck = data.spellcheck
-        if (Object.hasOwn(data, "showFolderPreview") && typeof data.showFolderPreview === "boolean") showFolderPreview = data.showFolderPreview
-        if (Object.hasOwn(data, "showFolderName") && typeof data.showFolderName === "boolean") showFolderName = data.showFolderName
     }
 
     firebase.subscribeToDoc([], (id, doc) => {
@@ -43,8 +39,8 @@ function createApp() {
         // ephemeral state
         get authRedirect() { return authRedirect },
         set authRedirect(value) { authRedirect = value },
-        get currentZoom() { return currentZoom },
-        set currentZoom(value) { currentZoom = value },
+        get zoom() { return zoom },
+        set zoom(value) { zoom = value },
         get theme() { return theme },
 
         // persistent state
@@ -66,18 +62,6 @@ function createApp() {
             lastUpdated = Date.now()
             publishSettings()
         },
-        get showFolderPreview() { return showFolderPreview },
-        set showFolderPreview(value) {
-            showFolderPreview = value
-            lastUpdated = Date.now()
-            publishSettings()
-        },
-        get showFolderName() { return showFolderName },
-        set showFolderName(value) {
-            showFolderName = value
-            lastUpdated = Date.now()
-            publishSettings()
-        }
     }
 }
 

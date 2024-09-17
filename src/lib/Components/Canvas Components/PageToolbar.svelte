@@ -1,6 +1,6 @@
 <script lang="ts">
     import { base } from '$app/paths'
-    import Icon from '$lib/Components/UI/Icon.svelte'
+    import Button from '$lib/Components/UI/Button.svelte'
 
     type props = {
         title: string
@@ -15,24 +15,14 @@
     }: props = $props()
 </script>
 
-<div class="page-toolbar">
-    <a class="home" href="{base}/"
-        ><Icon url="{base}/images/icons/home.svg" /></a
-    >
-    <button class="tree-panel-button"
-        ><Icon url="{base}/images/icons/folder.svg" /></button
-    >
-    <button class="settings-panel-button">{title}</button>
+<div class="page-toolbar theme-toolbar">
+    <Button iconURL="{base}/images/icons/font-awesome/home.svg" href="{base}/"/>
+    <Button iconURL="{base}/images/icons/font-awesome/folder-closed.svg" onclick={openSettingsPanel}/>
+    <Button onclick={openTreePanel}>{title}</Button>
 </div>
 
 <style>
-    .page-toolbar {
-        display: flex;
-        gap: 10px;
-        height: 30px;
-        padding: 5px;
-        background-color: var(--bg-alt);
-    }
-    .tree-panel-button {
+    .page-toolbar { 
+        width: max-content;
     }
 </style>

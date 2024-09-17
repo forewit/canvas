@@ -1,8 +1,11 @@
-# not-notepad
+# Canvas
 
-Definitely not a clone of Mircrosoft Notepad.
+**Icons:** 
 
-Icons: <https://www.svgrepo.com/collection/wolf-kit-solid-glyph-icons/> 
+- <https://www.svgrepo.com/collection/font-awesome-solid-icons/> 
+- <https://www.svgrepo.com/collection/wolf-kit-solid-glyph-icons/> 
+- [https://www.svgrepo.com/collection/wave-oval-interface-icons/](https://www.svgrepo.com/collection/wave-oval-interface-icons/\"&gt;https://www.svgrepo.com/collection/wave-oval-interface-icons/&lt;/a&gt)
+- <https://www.svgrepo.com/collection/gitlab-interface-icons/> 
 
 ## Initial Setup
 

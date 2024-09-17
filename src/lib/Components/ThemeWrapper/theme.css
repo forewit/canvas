@@ -1,94 +1,107 @@
 /* the theme variables are based on https://www.monkeytype.com/settings#group_theme */
 :root {
-  /* default theme variables */
-  --bg: #f0f0f0; /* background */
-  --bg-alt: #ffffff; /* input background */
-  --main: #c2c3cc; /* selected background*/
-  --error: #f24726; /* error background */
-  --text: #1a1a1a; /* text, :hover background */
-  --sub: #808080; /* headings, :active background */
-  --theme1: #414bb2;
-  --theme2: #0ca789;
-  --theme3: #b5266c;
-  --theme4: #333333;
-  --theme5: #cca349;
+    /* default theme variables */
+    --bg: #f0f0f0; /* background */
+    --bg-alt: #ffffff; /* input background */
+    --main: #c2c3cc; /* selected background*/
+    --error: #f24726; /* error background */
+    --text: #1a1a1a; /* text, :hover background */
+    --sub: #808080; /* headings, :active background */
+    --theme1: #414bb2;
+    --theme2: #0ca789;
+    --theme3: #b5266c;
+    --theme4: #333333;
+    --theme5: #cca349;
 
-  /* sizing based on Fibonacci & the Golden Rectangle */
-  --xs: 3px;
-  --s: 5px;
-  --m: 8px;
-  --l: 13px;
-  --xl: 21px;
+    /* sizing based on Fibonacci & the Golden Rectangle */
+    --xs: 3px;
+    --s: 5px;
+    --m: 8px;
+    --l: 13px;
+    --xl: 21px;
 
-  /* safe areas */
-  --safe-area-left: 0px; /* overwritten by env("safe-area-inset-left") */
-  --safe-area-right: 0px; /* overwritten by env("safe-area-inset-right") */
-  --safe-area-top: 0px; /* overwritten by env("safe-area-inset-top") */
-  --safe-area-inline: max(var(--safe-area-left), var(--safe-area-right));
+    /* shadows */
 
-  /* other */
-  --transition-speed: 200ms;
+    /* safe areas */
+    --safe-area-left: 0px; /* overwritten by env("safe-area-inset-left") */
+    --safe-area-right: 0px; /* overwritten by env("safe-area-inset-right") */
+    --safe-area-top: 0px; /* overwritten by env("safe-area-inset-top") */
+    --safe-area-inline: max(var(--safe-area-left), var(--safe-area-right));
+
+    /* other */
+    --transition-speed: 200ms;
+    --shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.25);
 }
 
 @font-face {
-  font-family: "Cascadia Code";
-  src: url("/fonts/cascadia-code/Cascadia.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'Cascadia Code';
+    src: url('/fonts/cascadia-code/Cascadia.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: "Selawik";
-  src: url("/fonts/selawik/selawk.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: 'Selawik';
+    src: url('/fonts/selawik/selawk.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
 }
 
 * {
-  font-family: "Selawik";
-  color: var(--text);
+    font-family: 'Selawik';
+    color: var(--text);
 }
 button {
-  -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body,
 html {
-  height: 100%;
-  background-color: var(--bg);
-  overscroll-behavior: none;
+    height: 100%;
+    background-color: var(--bg);
+    overscroll-behavior: none;
 }
 
-h1, h2, h3 {
-  color: var(--sub);
+h1,
+h2,
+h3 {
+    color: var(--sub);
 }
 
 h1 {
-  font-size: 1.5em;
-  margin-bottom: var(--l);
-  margin-top: var(--xl);
+    font-size: 1.5em;
+    margin-bottom: var(--l);
+    margin-top: var(--xl);
 }
 
 h2 {
-  font-size: 1.2em;
-  margin-bottom: var(--m);
-  margin-top: var(--l);
+    font-size: 1.2em;
+    margin-bottom: var(--m);
+    margin-top: var(--l);
 }
 
 h3 {
-  font-size: 1em;
-  margin-top: var(--l)
+    font-size: 1em;
+    margin-top: var(--l);
 }
 
 ::selection {
-  background-color: var(--sub);
-  color: var(--bg);
+    background-color: var(--sub);
+    color: var(--bg);
 }
 
-.ui-card {
-  background-color: var(--card);
-  padding: var(--m);
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+.theme-toolbar {
+    display: flex;
+    gap: var(--xs);
+    height: 50px;
+    border-radius: var(--s);
+    padding: var(--s);
+    background-color: var(--bg-alt);
+    box-shadow: var(--shadow);
 }
-
-
+.theme-panel {
+    background: var(--bg-alt);
+    padding: var(--l);
+    border-radius: var(--s);
+    box-shadow: var(--shadow);
+}

@@ -3,9 +3,9 @@
   import { getFirebaseContext } from "$lib/firebase.svelte";
   import { base } from "$app/paths";
   import { themes } from "$lib/Components/ThemeWrapper/themes.svelte";
-  import Button from "$lib/Components/Button.svelte";
-  import TextInput from "$lib/Components/TextInput.svelte";
-  import Toggle from "$lib/Components/Toggle.svelte";
+  import Button from "$lib/Components/UI/Button.svelte";
+  import TextInput from "$lib/Components/UI/TextInput.svelte";
+  import Toggle from "$lib/Components/UI/Toggle.svelte";
   import Icon from "$lib/Components/UI/Icon.svelte";
 
   const firebase = getFirebaseContext();

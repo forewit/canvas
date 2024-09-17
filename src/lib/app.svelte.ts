@@ -14,6 +14,7 @@ function createApp() {
     let spellcheck = $state(true)
     let showFolderPreview = $state(true)
     let showFolderName = $state(true)
+    let currentZoom = $state(1)
 
     function publishSettings() {
         firebase.publishDoc([], {lastUpdated, theme: themeName, spellcheck, username, showFolderName, showFolderPreview})
@@ -39,8 +40,14 @@ function createApp() {
     })
 
     return {
+        // ephemeral state
         get authRedirect() { return authRedirect },
         set authRedirect(value) { authRedirect = value },
+        get currentZoom() { return currentZoom },
+        set currentZoom(value) { currentZoom = value },
+        get theme() { return theme },
+
+        // persistent state
         get username() { return username },
         set username(value) {
             username = value
@@ -53,7 +60,6 @@ function createApp() {
             lastUpdated = Date.now()
             publishSettings()
         },
-        get theme() { return theme },
         get spellcheck() { return spellcheck },
         set spellcheck(value) {
             spellcheck = value

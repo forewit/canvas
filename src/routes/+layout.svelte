@@ -2,7 +2,7 @@
   import { onMount, type Snippet } from "svelte";
   import { goto } from "$app/navigation";
   import ThemeWrapper from "$lib/Components/ThemeWrapper/ThemeWrapper.svelte";
-  import ProgressBar from "$lib/Components/ProgressBar.svelte";
+  import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
   import PublishingStatus from "$lib/Components/PublishingStatus.svelte";
   import { base } from "$app/paths";
   import { setFirebaseContext } from "$lib/firebase.svelte";

@@ -5,8 +5,8 @@
   import { getPagesContext } from "$lib/pages.svelte";
   import { getFirebaseContext } from "$lib/firebase.svelte";
   import { getDirectoryContext } from "$lib/directories.svelte";
-  import Button from "$lib/Components/Button.svelte";
-  import Tree from "$lib/Components/D&D Theme/TreePanel.svelte";
+  import Button from "$lib/Components/UI/Button.svelte";
+  import Tree from "$lib/Components/Canvas Components/TreePanel.svelte";
 
   const app = getAppContext();
   const pages = getPagesContext();

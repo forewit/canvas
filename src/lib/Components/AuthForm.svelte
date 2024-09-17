@@ -1,6 +1,6 @@
 <script lang="ts">
 import { getFirebaseContext } from "$lib/firebase.svelte";  
-import ProgressBar from "$lib/Components/ProgressBar.svelte";
+import ProgressBar from "$lib/Components/UI/ProgressBar.svelte";
   
   let { onSuccessfulLogin }: { onSuccessfulLogin: () => void } = $props();
 

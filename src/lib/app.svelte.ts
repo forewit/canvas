@@ -13,6 +13,8 @@ function createApp() {
     let theme = $derived(themes.find((t) => t.name === themeName) || themes[0]);
     let spellcheck = $state(true)
     let zoom = $state(1)
+    let lockPage = $state(false)
+    let currentPageID = $state("")
 
     function publishSettings() {
         firebase.publishDoc([], { lastUpdated, theme: themeName, spellcheck, username, })
@@ -41,6 +43,10 @@ function createApp() {
         set authRedirect(value) { authRedirect = value },
         get zoom() { return zoom },
         set zoom(value) { zoom = value },
+        get lockPage() { return lockPage },
+        set lockPage(value) { lockPage = value },
+        get currentPageID() { return currentPageID },
+        set currentPageID(value) { currentPageID = value },
         get theme() { return theme },
 
         // persistent state

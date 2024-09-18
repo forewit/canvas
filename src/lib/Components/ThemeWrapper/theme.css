@@ -98,10 +98,12 @@ h3 {
     padding: var(--s);
     background-color: var(--bg-alt);
     box-shadow: var(--shadow);
+    touch-action: none;
 }
 .theme-panel {
     background: var(--bg-alt);
     padding: var(--l);
     border-radius: var(--s);
     box-shadow: var(--shadow);
+    touch-action: none;
 }

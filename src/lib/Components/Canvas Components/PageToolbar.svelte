@@ -1,18 +1,30 @@
 <script lang="ts">
     import { base } from '$app/paths'
+    import { getAppContext } from '$lib/app.svelte'
+    import { getPagesContext } from '$lib/pages.svelte'
     import Button from '$lib/Components/UI/Button.svelte'
+    
 
     type props = {
-        title: string
         openTreePanel?: () => void
         openSettingsPanel?: () => void
     }
 
     let {
-        title,
         openTreePanel = () => {},
         openSettingsPanel = () => {},
     }: props = $props()
+
+    const app = getAppContext()
+    const pages = getPagesContext()
+
+    let title = $derived.by(()=>{
+        if (pages[app.currentPageID] !== undefined) {
+            return pages[app.currentPageID].title
+        } else {
+            return "Untitled"
+        }
+    })
 </script>
 
 <div class="page-toolbar theme-toolbar">
@@ -24,5 +36,7 @@
 <style>
     .page-toolbar { 
         width: max-content;
+        padding-left: var(--l);
+        padding-right: var(--xl);
     }
 </style>

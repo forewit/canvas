@@ -6,6 +6,8 @@
     disabled?: boolean;
     variant?: "alt";
     name?: string;
+    id?: string;
+    type?: "text" | "password" | "email" | "hidden" | "url";
   };
 
   let {
@@ -15,11 +17,14 @@
     disabled = false,
     name = "",
     variant,
+    id,
+    type = "text",
   }: props = $props();
 </script>
 
 <input
-  type="text"
+  {id}
+  {type}
   {oninput}
   {placeholder}
   {disabled}

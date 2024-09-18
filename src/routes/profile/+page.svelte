@@ -6,7 +6,6 @@
     import Button from '$lib/Components/UI/Button.svelte'
     import TextInput from '$lib/Components/UI/TextInput.svelte'
     import Toggle from '$lib/Components/UI/Toggle.svelte'
-    import Icon from '$lib/Components/UI/Icon.svelte'
 
     const firebase = getFirebaseContext()
     const app = getAppContext()
@@ -86,11 +85,6 @@
     }
     section {
         padding-bottom: var(--l);
-    }
-
-    a.home {
-        display: block;
-        width: max-content;
     }
 
     .theme-grid {

@@ -5,11 +5,6 @@ export function applyTheme(elm: HTMLElement, theme: Theme) {
   elm.style.setProperty("--error", theme.error);
   elm.style.setProperty("--text", theme.text);
   elm.style.setProperty("--sub", theme.sub);
-  elm.style.setProperty("--theme1", theme.theme1);
-  elm.style.setProperty("--theme2", theme.theme2);
-  elm.style.setProperty("--theme3", theme.theme3);
-  elm.style.setProperty("--theme4", theme.theme4);
-  elm.style.setProperty("--theme5", theme.theme5);
 }
 
 export type Theme = {
@@ -20,13 +15,9 @@ export type Theme = {
     error: string;
     text: string;
     sub: string;
-    theme1: string;
-    theme2: string;
-    theme3: string;
-    theme4: string;
-    theme5: string;
   };
 
+  export const getThemeNames = () => themes.map((t) => t.name)
 
  export const themes: Theme[] = [
     {
@@ -37,11 +28,6 @@ export type Theme = {
       error: "#f24726",
       sub: "#808080",
       text: "#858585",
-      theme1: "#414bb2",
-      theme2: "#0ca789",
-      theme3: "#b5266c",
-      theme4: "#333333",
-      theme5: "#cca349",
     },
     // {
     //   name: "Paper",

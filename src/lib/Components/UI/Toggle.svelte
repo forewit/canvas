@@ -1,15 +1,30 @@
 <script lang="ts">
+    import { type Snippet } from 'svelte'
     type Props = {
-        checked?: boolean;
-        id?: string;
+        children?: Snippet
+        checked?: boolean
+        id?: string
+        variant?: 'alt'
     }
 
-    let { checked = $bindable(true), id }: Props = $props();
+    let { variant, children, checked = $bindable(true), id }: Props = $props()
 </script>
 
-<input type="checkbox" {id} bind:checked />
+<label for={id}>
+    <input type="checkbox" {id} bind:checked />
+    {#if children}
+        {@render children()}
+    {/if}
+</label>
 
 <style>
+    label {
+        cursor: pointer;
+        display: flex;
+        width: fit-content;
+        gap: var(--m);
+    }
+
     input {
         appearance: none;
         border: none;
@@ -23,14 +38,14 @@
     }
 
     input:before {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         width: calc(1.2em - 4px);
-       aspect-ratio: 1;
+        aspect-ratio: 1;
         border-radius: 100vh;
         z-index: 2;
-        
+
         background-color: var(--bg);
     }
 

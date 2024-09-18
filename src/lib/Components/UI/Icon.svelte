@@ -27,6 +27,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    pointer-events: none;
   }
   span {
     width: 100%;

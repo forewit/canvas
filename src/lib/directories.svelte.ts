@@ -19,8 +19,6 @@ function createDirectory() {
     let remoteRootUpdate = $state(true);
     let root: TreeNode = $state({ name: "Home", type: "folder", children: [] })
     let tree: Record<string, TreeNode> = $state({ "root": root })
-    let currentPath: string[] = $state(["root"])
-    let currentFolder = $derived(tree[currentPath[currentPath.length - 1]])
 
     let orphanedFolders: string[] = $derived.by(() => {
         let orphaned = Object.keys(tree).filter((folder) => folder !== "root");
@@ -126,6 +124,8 @@ function createDirectory() {
     function removeChild(parent: string, id: string) {
         if (!tree[parent] || tree[parent].type !== "folder") return
         tree[parent].children = tree[parent].children.filter(child => child !== id)
+        delete tree[id]
+        
     }
 
     firebase.subscribeToCollection(["directories"], (id, doc) => {
@@ -176,9 +176,6 @@ function createDirectory() {
 
     return {
         get tree() { return tree },
-        get currentPath() { return currentPath },
-        set currentPath(value) { currentPath = value },
-        get currentFolder() { return currentFolder },
         get addSubfolder() { return addSubfolder },
         get addPageID() { return addPageID },
         get removeChild() { return removeChild },

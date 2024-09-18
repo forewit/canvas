@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount, type Snippet } from 'svelte'
+    import { type Snippet } from 'svelte'
     import {
         type Theme,
         applyTheme,
@@ -15,7 +15,7 @@
         disabled?: boolean
         iconURL?: string
         href?: string
-        tabindex?: number
+        id?: string
     }
 
     let {
@@ -27,26 +27,31 @@
         selected = false,
         disabled = false,
         href,
-        tabindex,
+        id,
     }: Props = $props()
 
-    let elm: HTMLButtonElement | HTMLAnchorElement
+    let elm: HTMLButtonElement | HTMLAnchorElement;
 
-    onMount(() => {
-        if (theme) applyTheme(elm, theme)
+    export function getElm () {
+        return elm
+    }
+
+    $effect(()=>{
+        if (theme && elm) applyTheme(elm, theme)
     })
 </script>
 
 {#if href}
     <a
-        class="button"
         bind:this={elm}
+        {id}
         {href}
+        tabindex={disabled ? -1 : undefined}
+        class="button"
+        class:selected
         class:disabled
         class:error={variant === 'error'}
         class:alt={variant === 'alt'}
-        class:selected
-        {tabindex}
     >
         {#if iconURL}
             <Icon url={iconURL} size="1.2em" color="var(--icon-color)" />
@@ -57,14 +62,15 @@
     </a>
 {:else}
     <button
-        class="button"
         bind:this={elm}
+        {id}
         {onclick}
+        tabindex={disabled ? -1 : undefined}
+        class="button"
+        class:selected
         class:disabled
         class:error={variant === 'error'}
         class:alt={variant === 'alt'}
-        class:selected
-        {tabindex}
     >
         {#if iconURL}
             <Icon url={iconURL} size="1.2em" color="var(--icon-color)" />
@@ -100,11 +106,6 @@
         background-color: var(--bg);
     }
 
-    .button.selected {
-        outline: var(--xs) solid var(--main);
-        outline-offset: calc(-1 * var(--xs));
-    } 
-
     .button:focus-visible {
         outline: var(--main) dashed var(--xs);
         outline-offset: calc(-1 * var(--xs));
@@ -113,6 +114,11 @@
         outline: var(--bg-alt) dashed var(--xs);
         outline-offset: calc(-1 * var(--xs));
     }
+
+    .button.selected {
+        outline: var(--xs) solid var(--main);
+        outline-offset: calc(-1 * var(--xs));
+    } 
 
     .button:active {
         background-color: var(--main);

@@ -4,20 +4,20 @@
     import { getPagesContext } from '$lib/pages.svelte'
     import { getAppContext } from '$lib/app.svelte'
     import Button from '$lib/Components/UI/Button.svelte'
+    import { onMount } from 'svelte'
+    import { toStore } from 'svelte/store'
 
-    type TreeNode = (
+    type TreeNode =
         | { type: 'folder'; name: string; children: string[] }
         | { type: 'page'; pageID: string }
-    )
 
     const app = getAppContext()
     const directory = getDirectoryContext()
     const pages = getPagesContext()
 
-    let tree = $derived(directory.tree);
+    let tree = $derived(directory.tree)
     let expandedNodes: string[] = $state(['root'])
     let selectedNode: string = $state('root')
-    let activeNode: string = $state('root')
     let parentNode: string = $derived.by(() => {
         for (const id in tree) {
             if (
@@ -40,17 +40,20 @@
             } else {
                 expandedNodes.push(id)
             }
-        }
-        else if (tree[id].type === 'page') {
+        } else if (tree[id].type === 'page') {
             app.currentPageID = tree[id].pageID
         }
         selectedNode = id
-        activeNode = id
     }
 
     function deleteSelectedNode() {
-        if (confirm('Are you sure you want to delete?')) {
+        if (
+            selectedNode !== 'root' &&
+            confirm('Are you sure you want to delete?')
+        ) {
             directory.removeChild(parentNode, selectedNode)
+            selectedNode = 'root'
+            blur()
         }
     }
 
@@ -70,36 +73,146 @@
         }
     }
 
-    /**
-     * TODO: arrow keys
-     *
-     * left: close folder or navigate up
-     * right: open folder or navigate down
-     * up or shift+tab: navigate up
-     * down or tab: navigate down
-     * enter: open page or open folder
-     * esc or click not on a button: deselect all
-     * click outside the panel: close the panel
-     *
-     * do this by toggling tabindex from -1 to 0 and focus the button
-     */
+    let treePanel: HTMLDivElement
+    let buttons = $derived.by(() => {
+        if (expandedNodes.length >= 0 && treePanel)
+            return Array.from(treePanel.querySelectorAll('button'))
+        else return []
+    })
+    let selectedNodeButtonIndex = $derived(
+        buttons.findIndex((button) => button.id === selectedNode)
+    )
+    let activeButtonIndex = $state(0)
+
+    $effect(() => {
+        if (selectedNode !== 'root') {
+            activeButtonIndex = selectedNodeButtonIndex
+        } else {
+            activeButtonIndex = -1
+        }
+    })
+
+    function navigateUp() {
+        activeButtonIndex = Math.min(
+            buttons.length - 1,
+            Math.max(0, activeButtonIndex - 1)
+        )
+        if (buttons[activeButtonIndex].id === 'delete-node') {
+            navigateUp()
+            return
+        }
+        buttons[activeButtonIndex].focus()
+        if (tree[buttons[activeButtonIndex].id] !== undefined) {
+            selectedNode = buttons[activeButtonIndex].id
+        } else {
+            selectedNode = 'root'
+        }
+    }
+
+    function navigateDown() {
+        activeButtonIndex = Math.max(
+            0,
+            Math.min(buttons.length - 1, activeButtonIndex + 1)
+        )
+        if (buttons[activeButtonIndex].id === 'delete-node') {
+            if (buttons.length > 3) {
+                navigateDown()
+            } else {
+                navigateUp()
+            }
+            return
+        }
+        buttons[activeButtonIndex].focus()
+        if (tree[buttons[activeButtonIndex].id] !== undefined) {
+            selectedNode = buttons[activeButtonIndex].id
+        }
+    }
+
+    function blur() {
+        buttons.forEach((button) => {
+            button.blur()
+        })
+    }
+
+    function handleKeydown(e: KeyboardEvent) {
+        if (e.key === 'Escape') {
+            blur()
+        } else if (e.key === 'Enter') {
+            if (selectedNode !== 'root' && e.target === document.body) {
+                toggleNode(selectedNode)
+                e.preventDefault()
+            }
+        } else if (e.key === 'Delete') {
+            deleteSelectedNode()
+        } else if (e.key === 'ArrowLeft') {
+            if (
+                tree[selectedNode].type === 'folder' &&
+                selectedNodeButtonIndex !== -1 &&
+                expandedNodes.includes(selectedNode)
+            ) {
+                expandedNodes = expandedNodes.filter(
+                    (node) => node !== selectedNode
+                )
+            } else {
+                navigateUp()
+            }
+        } else if (e.key === 'ArrowRight') {
+            if (
+                tree[selectedNode].type === 'folder' &&
+                selectedNodeButtonIndex !== -1 &&
+                !expandedNodes.includes(selectedNode)
+            ) {
+                expandedNodes.push(selectedNode)
+            } else {
+                navigateDown()
+            }
+        } else if (e.key === 'ArrowUp') {
+            navigateUp()
+        } else if (e.key === 'ArrowDown') {
+            navigateDown()
+        }
+    }
+    function handleClick(e: MouseEvent) {
+        if (
+            buttons.findIndex(
+                (button) => button.id === (e.target as HTMLElement).id
+            ) === -1
+        ) {
+            blur()
+        }
+    }
+
+    onMount(() => {
+        document.addEventListener('click', handleClick)
+        document.addEventListener('keydown', handleKeydown)
+
+        return () => {
+            document.removeEventListener('click', handleClick)
+            document.removeEventListener('keydown', handleKeydown)
+        }
+    })
 </script>
 
-<div class="tree-panel theme-panel">
+<div class="tree-panel theme-panel" bind:this={treePanel}>
     <div class="controls">
         <p class="title">{app.username}</p>
         <Button
+            id="new-folder"
             iconURL="{base}/images/icons/font-awesome/folder-new.svg"
             onclick={() => newChild('folder')}
         />
         <Button
+            id="new-page"
             iconURL="{base}/images/icons/font-awesome/feather.svg"
             onclick={() => newChild('page')}
         />
         <Button
+            id="delete-node"
             disabled={!selectedNode || selectedNode === 'root'}
             iconURL="{base}/images/icons/font-awesome/trash.svg"
-            onclick={deleteSelectedNode}
+            onclick={() => {
+                deleteSelectedNode()
+            }}
         />
     </div>
 
@@ -114,10 +227,10 @@
             {#each treeNode.children as id}
                 {#if tree[id].type === 'page'}
                     <li>
-                        <div {id} class="button">
+                        <div class="button">
                             <Button
-                                selected={activeNode === id}
-                                tabindex={activeNode === id ? 0 : undefined}
+                                {id}
+                                selected={selectedNode === id}
                                 iconURL="{base}/images/icons/font-awesome/feather.svg"
                                 onclick={() => toggleNode(id)}
                                 >{pages[tree[id].pageID].title}</Button
@@ -127,10 +240,10 @@
                 {:else if tree[id].type === 'folder'}
                     <li>
                         {#if expandedNodes.includes(id)}
-                            <div {id} class="button">
+                            <div class="button">
                                 <Button
-                                    selected={activeNode === id}
-                                    tabindex={activeNode === id ? 0 : undefined}
+                                    {id}
+                                    selected={selectedNode === id}
                                     iconURL="{base}/images/icons/font-awesome/folder-open.svg"
                                     onclick={() => toggleNode(id)}
                                     >{tree[id].name}</Button
@@ -138,10 +251,10 @@
                             </div>
                             {@render node(tree[id], depth + 1)}
                         {:else}
-                            <div {id} class="button">
+                            <div class="button">
                                 <Button
-                                    selected={activeNode === id}
-                                    tabindex={activeNode === id ? 0 : undefined}
+                                    {id}
+                                    selected={selectedNode === id}
                                     iconURL="{base}/images/icons/font-awesome/folder-closed.svg"
                                     onclick={() => toggleNode(id)}
                                     >{tree[id].name}</Button

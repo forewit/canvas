@@ -137,6 +137,7 @@
     function handleKeydown(e: KeyboardEvent) {
         if (e.key === 'Escape') {
             blur()
+            selectedNode = 'root'
         } else if (e.key === 'Enter') {
             if (selectedNode !== 'root' && e.target === document.body) {
                 toggleNode(selectedNode)
@@ -179,6 +180,7 @@
             ) === -1
         ) {
             blur()
+            selectedNode = 'root'
         }
     }
 

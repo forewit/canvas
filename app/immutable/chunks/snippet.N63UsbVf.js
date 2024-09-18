@@ -1,0 +1,1 @@
+import{h as n,E as f,i as o,j as p,k as c,l as h}from"./runtime.BZ2yvmcy.js";function l(s,t,...i){var e=s,a,r;n(()=>{a!==(a=t())&&(r&&(p(r),r=null),a&&(r=o(()=>a(e,...i))))},f),c&&(e=h)}export{l as s};

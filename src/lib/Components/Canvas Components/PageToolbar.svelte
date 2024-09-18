@@ -22,7 +22,7 @@
         if (pages[app.currentPageID] !== undefined) {
             return pages[app.currentPageID].title
         } else {
-            return "Untitled"
+            return "Loading..."
         }
     })
 </script>

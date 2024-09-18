@@ -28,45 +28,32 @@
     </main>
 
     <footer>
-        <Button iconURL="{base}/images/icons/gear.svg" href="{base}/profile"
-            >Settings</Button
-        >
-
-        <section id="orphaned-folders">
-            <p>Orphaned folders:</p>
-            {#each directory.orphanedFolders as id}
-                <p>
-                    💀📁 {directory.tree[id].name}<button
-                        class="close-page-button"
-                        onclick={() => {
-                            delete directory.tree[id]
-                        }}>❌</button
-                    >
-                </p>
-            {/each}
-        </section>
-        <section id="orphaned-pages">
-            <p>Orphaned pages:</p>
-            {#each directory.orphanedPages as id}
-                <p>
-                    💀📄 {pages[id].title}<button
-                        class="close-page-button"
-                        onclick={() => {
-                            delete pages[id]
-                        }}>❌</button
-                    >
-                </p>
-            {/each}
-        </section>
+        <p>Orphans:</p>
+        {#each directory.orphanedFolders as id}
+        {#if directory.tree[id].type === 'folder'}
+            <Button
+                variant="error"
+                onclick={() => {
+                    delete directory.tree[id]
+                }}>💀📁{directory.tree[id].name}</Button
+            >
+        {/if}
+        {/each}
+        {#each directory.orphanedPages as pageID}
+            <Button
+                variant="error"
+                onclick={() => {
+                    delete directory.tree[pageID]
+                    delete pages[pageID]
+                }}>💀📄{pages[pageID].title}</Button
+            >
+        {/each}
     </footer>
 </div>
 
 <style>
     .page-container {
         height: 100%;
-    }
-    main {
-        width: max-content;
     }
 
     footer {

@@ -4,12 +4,10 @@ import type { DocumentData } from 'firebase/firestore';
 import { getPagesContext } from './pages.svelte';
 import { getAppContext } from './app.svelte';
 
-export type TreeNode = {
-    name: string;
-} & (
-        | { type: "folder"; children: string[] }
-        | { type: "page"; pageID: string }
-    );
+export type TreeNode = (
+    | { type: "folder"; name: string; children: string[] }
+    | { type: "page"; pageID: string }
+);
 
 type Directory = {
     lastUpdated: number
@@ -63,6 +61,31 @@ function createDirectory() {
         return orphaned;
     })
 
+    let orphans: string[] = $derived.by(()=>{
+        let orphaned = Object.keys(tree)
+        .filter((key) => key === "root");
+
+        let stack = ["root"];  // Initialize stack with root folder
+
+        while (stack.length > 0) {
+            let currentFolder = stack.pop();  // Get the last folder from the stack
+            if (!currentFolder) continue;
+            
+            let node = tree[currentFolder]
+
+            if (node.type === "folder") {
+                for (let child of node.children) {
+                    orphaned = orphaned.filter((orphan) => orphan !== child);
+                    stack.push(child);  // Add children to the stack
+                }
+            }
+            else if (node.type === "page") {
+                orphaned = orphaned.filter((orphan) => orphan !== node.pageID);
+            }
+        }
+        return orphaned
+    })
+
     const firebase = getFirebaseContext()
 
     function sanitizeDirectory(data: DocumentData): { wasValid: boolean, sanitizedDirectory: Directory } {
@@ -96,7 +119,7 @@ function createDirectory() {
 
     function addPageID(parent: string, pageID: string) {
         if (!tree[parent] || tree[parent].type !== "folder") return
-        tree[pageID] = { name: "Untitled", type: "page", pageID: pageID }
+        tree[pageID] = { type: "page", pageID: pageID }
         tree[parent].children.push(pageID)
     }
 

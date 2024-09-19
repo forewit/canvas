@@ -1,0 +1,1 @@
+import{w as f,E as i,x as o,y as p,z as c,A as d}from"./runtime.DGpmsJ_j.js";function y(s,t,...n){var e=s,a,r;f(()=>{a!==(a=t())&&(r&&(p(r),r=null),a&&(r=o(()=>a(e,...n))))},i),c&&(e=d)}export{y as s};

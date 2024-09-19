@@ -21,6 +21,7 @@
     <header></header>
 
     <main>
+        <Button href="{base}/layout/">Layout</Button>
         <PageToolbar />
         <ZoomToolbar variant="alt" />
         <TreePanel />

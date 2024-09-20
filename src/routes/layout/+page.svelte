@@ -2,7 +2,8 @@
     import LayoutGrid from '$lib/Components/layout/LayoutGrid.svelte'
 
     let gridTemplate = [
-        [1],
+        [1, 2],
+        [4, 2],
     ]
 </script>
 

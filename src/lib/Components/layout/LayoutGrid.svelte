@@ -33,9 +33,46 @@
         // initialize grid areas
         let grid = gridTemplate.map((row) => row.map((col) => `a${col}`))
 
+        // insert column zones
+        grid.forEach((row) => row.unshift('c0'))
+        let colZone = 1
+
+        //loop through each row
+        for (let i = 0; i < grid.length; i++) {
+            let thisRow = grid[i]
+
+            // loop through each column
+            for (let j = 1; j < thisRow.length - 1; j++) {
+                if (thisRow[j] !== thisRow[j + 1]) {
+                    // check if there is a column zone in the previous row
+                    if (i > 0 && grid[i - 1][j + 1].startsWith('c')) {
+                        thisRow.splice(j + 1, 0, grid[i - 1][j + 1])
+                    } /* else if (
+                        i > 1 &&
+                        grid[i - 1][j + 1].startsWith('r') &&
+                        grid[i - 2][j + 1].startsWith('c')
+                    ) {
+                        grid[i-1][j + 1] = grid[i - 2][j + 1]
+                        thisRow.splice(j+1, 0, grid[i - 2][j + 1])
+                    }*/ else {
+                        // insert a column zone
+                        thisRow.splice(j + 1, 0, 'c' + colZone)
+                        colZone++
+                    }
+                } else {
+                    // insert a grid area
+                    thisRow.splice(j + 1, 0, thisRow[j])
+                }
+                j++
+            }
+        }
+
+        // add final column zone
+        grid.forEach((row) => row.push('c' + colZone))
+
         // insert row zones
         const colCount = grid[0].length
-        grid.unshift(Array(colCount * 2 - 1).fill('r0'))
+        grid.unshift(Array(colCount).fill('r0'))
 
         let rowZone = 1
         // loop through all rows
@@ -63,37 +100,6 @@
 
         grid.push(Array(colCount).fill('r' + rowZone))
 
-        // insert column zones
-        grid.forEach((row) => row.unshift('c0'))
-        let colZone = 1
-
-        //loop through each row
-        for (let i = 1; i < grid.length; i++) {
-            let thisRow = grid[i]
-            let prevRow = grid[i - 1]
-
-            // loop through each column
-            for (let j = 1; j < thisRow.length - 1; j++) {
-                if (thisRow[j] !== thisRow[j + 1]) {
-                    // check if there is a column zone in the previous row
-                    if (prevRow[j + 1].startsWith('c')) {
-                        thisRow.splice(j + 1, 0, prevRow[j + 1])
-                    } else {
-                        // insert a column zone
-                        thisRow.splice(j + 1, 0, 'c' + colZone)
-                        colZone++
-                    }
-                } else {
-                    // insert a grid area
-                    thisRow.splice(j + 1, 0, thisRow[j])
-                }
-                j++
-            }
-        }
-
-        // add final column zone
-        grid.forEach((row) => row.push('c' + colZone))
-
         // update state
         rowZoneCount = rowZone + 1
         colZoneCount = colZone + 1
@@ -108,18 +114,61 @@
         return gridTemplate.flat().reduce((a, b) => Math.max(a, b), 0) + 1
     }
 
-    function splitVertically(gridArea: number) {}
 
-    function splitHorizontally(gridArea: number) {
+    function deleteGridArea(gridArea: number) {
+        
+    }
+
+    function splitGridArea(gridArea: number, vertical = false) {
         const y = gridTemplate.findIndex((row) => row.includes(gridArea))
         const x = gridTemplate[y].indexOf(gridArea)
-        const width = gridTemplate[y].lastIndexOf(gridArea) + 1 - x
-        const height =
+        let width = gridTemplate[y].lastIndexOf(gridArea) + 1 - x
+        let height =
             gridTemplate.findLastIndex((row) => row.includes(gridArea)) + 1 - y
 
-        console.log({ x, y, width, height })
+        const newArea = getNextAreaNumber()
 
-        // if height is odd, add an extra row
+        if (vertical) {
+            // if width is odd, add a column
+            if (width % 2 === 1) {
+                const splitIndex = x + (width - 1) / 2
+                // duplicate the column at the split index
+                console.log({ splitIndex })
+
+                for (let i = 0; i < gridTemplate.length; i++) {
+                    const area = gridTemplate[i][splitIndex]
+                    gridTemplate[i].splice(splitIndex, 0, area)
+                }
+                width++
+            }
+
+            // change the right half to the new area
+            for (let i = x + width / 2; i < width + x; i++) {
+                for (let j = y; j < y + height; j++) {
+                    gridTemplate[j][i] = newArea
+                }
+            }
+
+        } else {
+            // if height is odd, add a row
+            if (height % 2 === 1) {
+                const splitIndex = y + (height - 1) / 2
+                // duplicate the row at the split index
+                console.log({ splitIndex })
+                const newRow = gridTemplate[splitIndex].map((col) => col)
+                gridTemplate.splice(splitIndex, 0, newRow)
+                height++
+            }
+
+            // change the bottom half to the new area
+            for (let i = y + height / 2; i < height + y; i++) {
+                for (let j = x; j < x + width; j++) {
+                    gridTemplate[i][j] = newArea
+                }
+            }
+        }
+
+        updateLayout()
     }
 
     function insertRow(rowZone: number) {
@@ -132,7 +181,10 @@
         // adjust to size of original gridTemplate
         const x = (j - 1) / 2
         const y = i / 2
-        const width = (layoutGrid[i].lastIndexOf(`r${rowZone}`) + 1) / 2 - x
+        const width = Math.min(
+            (layoutGrid[i].lastIndexOf(`r${rowZone}`) + 1) / 2 - x,
+            gridTemplate[0].length
+        )
 
         let newRow = Array(width).fill(getNextAreaNumber())
         if (y === 0) {
@@ -181,20 +233,20 @@
 <div
     class="grid"
     style="grid-template-areas: {gridTemplateStyle}; 
-            grid-template-columns: repeat({gridTemplate[0]
-        .length}, min-content auto) min-content;
-            grid-template-rows: repeat({gridTemplate.length}, min-content auto) min-content;"
+    grid-template-columns: repeat({gridTemplate[0]
+        .length}, min-content auto) min-content;"
 >
     {#each gridItems as gridArea}
         <div class="grid-item" style="grid-area: a{gridArea};">
-            {gridArea}
-            <button class="top" onclick={() => splitHorizontally(gridArea)}
+            <textarea name="" id=""></textarea>
+            <button class="delete" onclick={()=>deleteGridArea(gridArea)}>{gridArea}</button>
+            <button class="top zone" onclick={() => splitGridArea(gridArea)}
             ></button>
-            <button class="bottom" onclick={() => splitHorizontally(gridArea)}
+            <button class="bottom zone" onclick={() => splitGridArea(gridArea)}
             ></button>
-            <button class="left" onclick={() => splitVertically(gridArea)}
+            <button class="left zone" onclick={() => splitGridArea(gridArea, true)}
             ></button>
-            <button class="right" onclick={() => splitVertically(gridArea)}
+            <button class="right zone" onclick={() => splitGridArea(gridArea, true)}
             ></button>
         </div>
     {/each}
@@ -217,54 +269,59 @@
 
 <style>
     .grid {
-        width: 100%;
-        height: 100%;
+        
         display: grid;
         gap: 5px;
-
-        --zone-size: 20px;
+        grid-auto-rows: min-content;
+        --zone-size: 10px;
     }
 
     .row-zone {
-        height: 20px;
+        height: var(--zone-size);
         background-color: aquamarine;
     }
 
     .col-zone {
-        width: 20px;
+        width: var(--zone-size);
         background-color: aquamarine;
     }
 
     .grid-item {
+        min-width: 40px;
+        min-height: 40px;
         background-color: lightblue;
         position: relative;
         display: grid;
         place-content: center;
     }
-    .grid-item > button {
+    .grid-item .delete {
+        width: 20px;
+        height: 20px;
+        background-color: lightcoral;
+    }
+    .grid-item .zone {
         position: absolute;
         background: lightskyblue;
     }
-
-    .top {
+    .zone.top {
         top: 0;
         left: var(--zone-size);
         right: var(--zone-size);
         height: var(--zone-size);
     }
-    .bottom {
+    .zone.bottom {
         bottom: 0;
         left: var(--zone-size);
         right: var(--zone-size);
         height: var(--zone-size);
     }
-    .left {
+    .zone.left {
         top: var(--zone-size);
         bottom: var(--zone-size);
         left: 0;
         width: var(--zone-size);
     }
-    .right {
+    .zone.right {
         top: var(--zone-size);
         bottom: var(--zone-size);
         right: 0;
